@@ -14,7 +14,7 @@ class Panoptir:
     velo = [0,0]
     def __init__(self, iType=0):
         pass
-    def act(self,everybody):
+    def act(self,world):
         curPressed = key.get_pressed()
         if curPressed[pygame.K_ESCAPE]:
             pygame.event.post(pygame.event.Event(pygame.QUIT))
@@ -22,7 +22,7 @@ class Panoptir:
             mousePos = pygame.mouse.get_pos()
             self.timeToMove = pygame.time.get_ticks() + 1000
             self.temp.rect.centerx,self.temp.rect.centery = mousePos
-            everybody.add(self.temp)
+            world.everybody.add(self.temp)
         if self.timeToMove > 0 and pygame.time.get_ticks() > self.timeToMove:
             self.sprite.rect.centerx  = self.temp.rect.centerx
             self.sprite.rect.centery  = self.temp.rect.centery
