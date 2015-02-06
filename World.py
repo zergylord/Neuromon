@@ -15,6 +15,7 @@ class World:
         enemy.image = pygame.image.load("butterfly.jpg")
         enemy.rect = enemy.image.get_rect()
         enemy.rect = enemy.rect.move([300,300])
+        enemy.radius = enemy.rect.height/2
         self.baddies = pygame.sprite.Group(enemy)
         self.everybody.add(enemy)
     def step(self):
@@ -38,7 +39,20 @@ class World:
         self.resolveDeath()
     def resolveCollisions(self):
         'handle collisions between objects'
-        pygame.sprite.spritecollide(self.players[0].sprite,self.baddies,True)
+        for p in self.players:
+            collSprites = pygame.sprite.spritecollide(p.sprite,self.everybody,False,pygame.sprite.collide_circle)
+            for c in collSprites:
+                if p.sprite is c: #sprite always contained in the group
+                    continue
+                p.health -= 1 #TODO: change to c.owner.collDamage
+                dx = p.sprite.rect.centerx-c.rect.centerx + np.random.rand() -.5
+                dy = p.sprite.rect.centery-c.rect.centery + np.random.rand() -.5
+                delta = pygame.math.Vector2(dx,dy) #cur distance between sprite centers
+                desiredDis = p.sprite.radius + c.radius + 3 # how far away sprite must be to avoid collision
+                delta.scale_to_length(desiredDis) 
+                p.sprite.rect.centerx += delta.x
+                p.sprite.rect.centery += delta.y
+                #print p.health
     def resolveEffects(self):
         'handle spell effects, and other time dependent game state'
         pass

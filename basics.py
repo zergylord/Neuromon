@@ -15,12 +15,15 @@ screen = pygame.display.set_mode(size)
 sprite = pygame.sprite.Sprite()
 sprite.image = pygame.image.load("butterfly.jpg")
 sprite.rect = sprite.image.get_rect()
+sprite.radius = sprite.rect.height/2
+sprite.health = 3;
 everybody = pygame.sprite.Group(sprite)
 
 enemy = pygame.sprite.Sprite()
 enemy.image = pygame.image.load("butterfly.jpg")
 enemy.rect = enemy.image.get_rect()
 enemy.rect = enemy.rect.move([300,300])
+enemy.radius = enemy.rect.height/2
 baddies = pygame.sprite.Group(enemy)
 everybody.add(enemy)
 
@@ -66,8 +69,17 @@ while count < 100:
         sprite.rect.centerx  = mousePos[0]
         sprite.rect.centery  = mousePos[1]
 
-
-    pygame.sprite.spritecollide(sprite,baddies,True)
+    collSprites = pygame.sprite.spritecollide(sprite,baddies,False,pygame.sprite.collide_circle)
+    if len(collSprites) != 0 :
+        sprite.health -= 1
+        dx = sprite.rect.centerx-collSprites[0].rect.centerx
+        dy = sprite.rect.centery-collSprites[0].rect.centery
+        delta = pygame.math.Vector2(dx,dy) #cur distance between sprite centers
+        desiredDis = sprite.radius + collSprites[0].radius + 3 # how far away sprite must be to avoid collision
+        delta.scale_to_length(desiredDis) 
+        sprite.rect.centerx += delta.x
+        sprite.rect.centery += delta.y
+        print sprite.health
     screen.fill(black)
     everybody.draw(screen)
     #screen.blit(ball,sprite.rect)

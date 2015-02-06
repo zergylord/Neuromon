@@ -3,6 +3,7 @@ import sys,pygame
 
 class Panoptir:
     'first monster type'
+    health = 10
     iType = 0 #0=human,1=bot,2=brain
     temp = pygame.sprite.Sprite()
     temp.image = pygame.image.load("butterfly.jpg")
@@ -11,6 +12,7 @@ class Panoptir:
     sprite = pygame.sprite.Sprite()
     sprite.image = pygame.image.load("butterfly.jpg")
     sprite.rect = sprite.image.get_rect()
+    sprite.radius = sprite.rect.height/2
     velo = [0,0]
     def __init__(self, iType=0):
         pass
