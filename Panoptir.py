@@ -6,7 +6,8 @@ from globals import *
 class Panoptir:
     'first monster type'
     beamDuration = 1000
-    moveDuration = 5000 #if moving full screen
+    baseMoveDuration = 500 
+    distMoveDuration = 5000 #proportional to distance traveled
 
     horBeamImage = pygame.Surface([300,50])
     horBeamImage.fill([255,20,70])
@@ -71,13 +72,13 @@ class Panoptir:
             move = pygame.mouse.get_pressed()[0]
             pew = [0,0]
             curPressed = key.get_pressed()
-            if curPressed[pygame.K_LEFT]:
+            if curPressed[pygame.K_a]:
                 pew[0] = -1
-            elif curPressed[pygame.K_RIGHT]:
+            elif curPressed[pygame.K_d]:
                 pew[0] = 1
-            elif curPressed[pygame.K_UP]:
+            elif curPressed[pygame.K_w]:
                 pew[1] = -1
-            elif curPressed[pygame.K_DOWN]:
+            elif curPressed[pygame.K_s]:
                 pew[1] = 1
             return move,pew,pygame.mouse.get_pos()
         elif self.iType == 1:
@@ -136,7 +137,7 @@ class Panoptir:
                 self.moveCooldown = pygame.time.get_ticks() + 1000 #can't move again for a second
             elif move and pygame.time.get_ticks() > self.moveCooldown: #start movement
                 moveDis = np.linalg.norm(np.subtract(mousePos,self.sprite.rect.center))
-                self.timeToMove = pygame.time.get_ticks() + self.moveDuration*(moveDis/width)
+                self.timeToMove = pygame.time.get_ticks() + self.baseMoveDuration + self.distMoveDuration*(moveDis/width)
                 self.temp.rect.centerx,self.temp.rect.centery = mousePos
                 world.everybody.add(self.temp)
             else: #not moving
