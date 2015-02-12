@@ -45,6 +45,16 @@ class Panoptir:
 
         self.pew = [0,0]
         self.iType = iType
+    def setup(self,world):
+        if self.iType == 0:
+            pass
+        elif self.iType == 1:
+            self.foe = world.players.difference(set([self])).pop()
+        elif self.iType == 2:
+            pass
+        else:
+            raise ValueError("Not a valid player type!")
+
     def getInput(self,world):
         '''
             returns:
@@ -68,16 +78,39 @@ class Panoptir:
             return move,pew,pygame.mouse.get_pos()
         elif self.iType == 1:
             #return False,[0,0],[1,1]
-            move = True
+            #move = True
+            #pew = [0,0]
+            #pew[np.random.randint(2)] = np.random.randint(2)*2 -1 #one dimension will be randomly assigned 1 or -1
+            #moveTo = [np.random.randint(1,width),np.random.randint(1,height)]
+            horDiff = self.foe.sprite.rect.centerx - self.sprite.rect.centerx
+            vertDiff = self.foe.sprite.rect.centery - self.sprite.rect.centery
+            move = False
+            moveTo = []
             pew = [0,0]
-            pew[np.random.randint(2)] = np.random.randint(2)*2 -1 #one dimension will be randomly assigned 1 or -1
-            moveTo = [np.random.randint(1,width),np.random.randint(1,height)]
+            if np.abs(vertDiff) < 20:
+               pew[0] = np.sign(horDiff)
+            elif np.abs(horDiff) < 20:
+               pew[1] = np.sign(vertDiff)
+            else:
+                move = True
+                coin = np.random.randint(2)
+                if coin == 0:
+                    x = np.random.randint(1,width)
+                    y = self.foe.sprite.rect.centery
+                else:
+                    x = self.foe.sprite.rect.centerx
+                    y = np.random.randint(1,height)
+                moveTo = [x,y]
             return move,pew,moveTo
         elif self.iType == 2:
             pass
         else:
             raise ValueError("Not a valid player type!")
     def act(self,world):
+        '''
+            modifies the world object based on the action set of Panoptir. Action selection 
+            delegated to Act()
+        '''
         move, pew,mousePos = self.getInput(world)
         #check for movement events
         if not self.temp.alive():

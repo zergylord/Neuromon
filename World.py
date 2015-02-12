@@ -31,6 +31,9 @@ class World:
         enemy.radius = enemy.rect.height/2
         #self.baddies.add(enemy)
         #self.everybody.add(enemy)
+    def start(self):
+        for p in self.players:
+            p.setup(self)
     def step(self):
         '''
         single step of logic and rendering, currently called 60 times per second

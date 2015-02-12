@@ -21,6 +21,7 @@ if len(sys.argv) > 1:
     iType = sys.argv[1]
     world.players[0].iType = int(iType)
 
+world.start()
 #main game loop
 while count < 100:
     #count+= 1
