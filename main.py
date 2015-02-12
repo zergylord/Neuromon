@@ -13,7 +13,7 @@ speed = 1;
 black = 0,0,0
 
 
-screen = pygame.display.set_mode(size)
+screen = pygame.display.set_mode(size,pygame.FULLSCREEN)
 count = 0
 world = World()
 

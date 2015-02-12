@@ -6,7 +6,7 @@ from globals import *
 class Panoptir:
     'first monster type'
     beamDuration = 1000
-    moveDuration = 2000
+    moveDuration = 5000 #if moving full screen
 
     horBeamImage = pygame.Surface([300,50])
     horBeamImage.fill([255,20,70])
@@ -35,8 +35,10 @@ class Panoptir:
         self.beam.radius = self.beam.rect.height/2
 
         self.temp = pygame.sprite.Sprite()
-        self.temp.image = pygame.image.load("butterfly.jpg")
-        self.temp.image =  pygame.transform.scale(self.temp.image,[100,100])
+        #self.temp.image = pygame.image.load("butterfly.jpg")
+        #self.temp.image =  pygame.transform.scale(self.temp.image,[100,100])
+        self.temp.image = pygame.Surface([100,100])
+        self.temp.image.fill(self.tint)
         self.temp.rect = self.temp.image.get_rect()
         self.temp.radius = self.temp.rect.height/2
         self.temp.breakable = True
@@ -89,9 +91,9 @@ class Panoptir:
             move = False
             moveTo = []
             pew = [0,0]
-            if np.abs(vertDiff) < 20:
+            if np.abs(vertDiff) < 20 and np.abs(horDiff) < self.horBeamImage.get_width():
                pew[0] = np.sign(horDiff)
-            elif np.abs(horDiff) < 20:
+            elif np.abs(horDiff) < 20 and np.abs(vertDiff) < self.horBeamImage.get_width():
                pew[1] = np.sign(vertDiff)
             else:
                 move = True
@@ -117,9 +119,9 @@ class Panoptir:
             self.health -= self.damageToTake
             self.damageToTake = 0
             self.sprite.image.fill(self.tint,None,pygame.BLEND_SUB)
-            self.tint[0] = int(np.min([(1.0-self.health/10.0)*255,255]))
-            self.sprite.image.fill(self.tint,None,pygame.BLEND_ADD)
+            self.tint[0] = int(np.max([0,np.min([(1.0-self.health/10.0)*255,255])]))
             print self.tint[0]
+            self.sprite.image.fill(self.tint,None,pygame.BLEND_ADD)
     def step(self,world):
         '''
             modifies the world object based on the action set of Panoptir. Action selection 
@@ -132,21 +134,25 @@ class Panoptir:
             if self.timeToMove > 0: #temp died before movement, cancel movement
                 self.timeToMove = -1
                 self.moveCooldown = pygame.time.get_ticks() + 1000 #can't move again for a second
-            elif move and pygame.time.get_ticks() > self.moveCooldown:
-                self.timeToMove = pygame.time.get_ticks() + self.moveDuration
+            elif move and pygame.time.get_ticks() > self.moveCooldown: #start movement
+                moveDis = np.linalg.norm(np.subtract(mousePos,self.sprite.rect.center))
+                self.timeToMove = pygame.time.get_ticks() + self.moveDuration*(moveDis/width)
                 self.temp.rect.centerx,self.temp.rect.centery = mousePos
                 world.everybody.add(self.temp)
-        if self.timeToMove > 0 and pygame.time.get_ticks() > self.timeToMove:
+            else: #not moving
+                self.damageToTake += 1.0/(fps) #penalty not moving
+        if self.timeToMove > 0 and pygame.time.get_ticks() > self.timeToMove: #complete movement
             self.sprite.rect.centerx  = self.temp.rect.centerx
             self.sprite.rect.centery  = self.temp.rect.centery
             self.temp.kill()
             self.timeToMove = -1
             self.moveCooldown = pygame.time.get_ticks() + 100 #small delay between moves
+            self.damageToTake += -1 #bonus for completing a move
         #check for attack events
         if self.beam.alive():
             if pygame.time.get_ticks() > self.beamCutoffTime:
                 self.beam.kill()
-        elif (pew[0] != 0 or pew[1] !=0): #if attack command sent
+        elif self.timeToMove < 0 and (pew[0] != 0 or pew[1] !=0): #if attack command sent and not mid-move
                 if pew[0] != 0:
                     self.beam.image = self.horBeamImage
                 else:
