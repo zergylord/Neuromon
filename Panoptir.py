@@ -67,7 +67,7 @@ class Panoptir:
                 pew[1] = 1
             return move,pew,pygame.mouse.get_pos()
         elif self.iType == 1:
-            return False,[0,0],[1,1]
+            #return False,[0,0],[1,1]
             move = True
             pew = [0,0]
             pew[np.random.randint(2)] = np.random.randint(2)*2 -1 #one dimension will be randomly assigned 1 or -1
@@ -114,6 +114,11 @@ class Panoptir:
                     self.timeToMove = self.beamCutoffTime #delay move until attack finishes 
                 else:
                     self.moveCooldown = self.beamCutoffTime #can't start a move during an attack
+    def kill(self):
+        self.temp.kill()
+        self.beam.kill()
+        self.sprite.kill()
+
 
 
 

@@ -8,7 +8,7 @@ class World:
     def __init__(self):
         self.clock = pygame.time.Clock()
         self.killMe = set()
-        self.players = []
+        self.players = set()
         self.everybody = pygame.sprite.Group()
         #setup players
 
@@ -16,13 +16,12 @@ class World:
         bot.sprite.rect.centerx = 500
         bot.sprite.rect.centery = 500
         self.everybody.add(bot.sprite)
-        self.players.append(bot)
+        self.players.add(bot)
 
         player = Panoptir(0)
         player.sprite.rect.centerx = 500
         self.everybody.add(player.sprite)
-        self.players.append(player)
-
+        self.players.add(player)
 
         self.baddies = pygame.sprite.Group()
         enemy = pygame.sprite.Sprite()
@@ -88,14 +87,17 @@ class World:
                 if getattr(c,'breakable',False):
                     self.killMe.add(c)
                 #print p.health
+            if p.health < 0:
+                self.killMe.add(p)
     def resolveEffects(self):
         'handle spell effects, and other time dependent game state'
         pass
     def resolveDeath(self):
         'handle the removal of sprites and other objects from the game world'
         for k in self.killMe:
+            if k in self.players:
+                self.players.remove(k)
             k.kill()
-            print k.alive()
         self.killMe.clear()
     def render(self):
         'draw Everything'
