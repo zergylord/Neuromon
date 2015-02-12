@@ -7,6 +7,7 @@ from pygame import key as key
 from globals import *
 pygame.init()
 
+
 velo = [0,0]
 speed = 1;
 black = 0,0,0
@@ -16,6 +17,9 @@ screen = pygame.display.set_mode(size)
 count = 0
 world = World()
 
+if len(sys.argv) > 1:
+    iType = sys.argv[1]
+    world.players[0].iType = int(iType)
 
 #main game loop
 while count < 100:
