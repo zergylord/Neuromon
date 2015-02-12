@@ -33,7 +33,7 @@ class World:
         #self.everybody.add(enemy)
     def start(self):
         for p in self.players:
-            p.setup(self)
+            p.start(self)
     def step(self):
         '''
         single step of logic and rendering, currently called 60 times per second
@@ -41,7 +41,7 @@ class World:
         self.clock.tick(fps)
         #print self.clock.get_fps()
         for p in self.players:
-            p.act(self)
+            p.step(self)
             if (p.sprite.rect.left < 0 and p.velo[0] < 0) or (p.sprite.rect.right > width and p.velo[0]>0):
                 p.velo[0] = 0
             if (p.sprite.rect.top < 0 and p.velo[1] < 0) or (p.sprite.rect.bottom > height and p.velo[1]>0):
@@ -73,12 +73,7 @@ class World:
             for c in collSprites:
                 if p.sprite is c: #sprite always contained in the group
                     continue
-                if getattr(c,'damage',0) != 0:
-                    p.health -= c.damage
-                    p.sprite.image.fill(p.tint,None,pygame.BLEND_SUB)
-                    p.tint[0] = int(np.min([(1.0-p.health/10.0)*255,255]))
-                    p.sprite.image.fill(p.tint,None,pygame.BLEND_ADD)
-                    print p.tint[0]
+                p.damageToTake +=  getattr(c,'damage',0)
                 if not getattr(c,'passThrough',False):
                     dx = p.sprite.rect.centerx-c.rect.centerx + np.random.rand() -.5
                     dy = p.sprite.rect.centery-c.rect.centery + np.random.rand() -.5

@@ -6,12 +6,14 @@ from globals import *
 class Panoptir:
     'first monster type'
     beamDuration = 1000
+    moveDuration = 2000
 
     horBeamImage = pygame.Surface([300,50])
     horBeamImage.fill([255,20,70])
     vertBeamImage = pygame.Surface([50,300])
     vertBeamImage.fill([255,20,70])
     def __init__(self, iType=1):
+        self.damageToTake = 0
         self.tint = [50,20,iType*127,50]
         self.velo = [0,0] #never used due to Panoptirs movement type
         self.health = 10
@@ -45,7 +47,7 @@ class Panoptir:
 
         self.pew = [0,0]
         self.iType = iType
-    def setup(self,world):
+    def start(self,world):
         if self.iType == 0:
             pass
         elif self.iType == 1:
@@ -106,11 +108,24 @@ class Panoptir:
             pass
         else:
             raise ValueError("Not a valid player type!")
-    def act(self,world):
+    def update(self,world):
+        '''
+            handles changes in state and there effects
+            e.g. health change leads to new tint
+        '''
+        if self.damageToTake != 0:
+            self.health -= self.damageToTake
+            self.damageToTake = 0
+            self.sprite.image.fill(self.tint,None,pygame.BLEND_SUB)
+            self.tint[0] = int(np.min([(1.0-self.health/10.0)*255,255]))
+            self.sprite.image.fill(self.tint,None,pygame.BLEND_ADD)
+            print self.tint[0]
+    def step(self,world):
         '''
             modifies the world object based on the action set of Panoptir. Action selection 
-            delegated to Act()
+            delegated to getInput()
         '''
+        self.update(world)
         move, pew,mousePos = self.getInput(world)
         #check for movement events
         if not self.temp.alive():
@@ -118,7 +133,7 @@ class Panoptir:
                 self.timeToMove = -1
                 self.moveCooldown = pygame.time.get_ticks() + 1000 #can't move again for a second
             elif move and pygame.time.get_ticks() > self.moveCooldown:
-                self.timeToMove = pygame.time.get_ticks() + 1000
+                self.timeToMove = pygame.time.get_ticks() + self.moveDuration
                 self.temp.rect.centerx,self.temp.rect.centery = mousePos
                 world.everybody.add(self.temp)
         if self.timeToMove > 0 and pygame.time.get_ticks() > self.timeToMove:
