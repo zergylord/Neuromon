@@ -38,8 +38,6 @@ class Panoptir:
         self.beam.radius = self.beam.rect.height/2
 
         self.temp = pygame.sprite.Sprite()
-        #self.temp.image = pygame.image.load("butterfly.jpg")
-        #self.temp.image =  pygame.transform.scale(self.temp.image,[100,100])
         self.temp.image = pygame.Surface([100,100])
         self.temp.image.fill(self.tint)
         self.temp.rect = self.temp.image.get_rect()

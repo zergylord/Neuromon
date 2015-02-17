@@ -50,8 +50,20 @@ class World:
         self.resolveConflicts()
         self.render()
     def environmentalActions(self):
-        'control anything neither player can directly influence'
-        pass
+        '''control anything neither player can directly influence
+            currently: invisible walls contain players to the field
+        '''
+        for p in self.players:
+            if (p.sprite.rect.left < 0 ):
+                p.sprite.rect.left = 0
+            if (p.sprite.rect.right > width ):
+                p.sprite.rect.right = width
+            if (p.sprite.rect.top < 0):
+                p.sprite.rect.top = 0 
+            if (p.sprite.rect.bottom > height):
+                p.sprite.rect.bottom = height
+
+
     def resolveConflicts(self):
         'handle conflicts between the results of all state changes' 
         self.resolveCollisions()
