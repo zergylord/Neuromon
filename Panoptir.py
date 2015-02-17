@@ -2,6 +2,18 @@ import pygame.key as key
 import sys,pygame
 import numpy as np
 from globals import *
+def death(world):
+    ''' placeholder death animation
+        should be a method, but isn't since
+        the parent is a Sprite
+        Also needs a timer and a kill
+    '''
+    boom = pygame.sprite.Sprite()
+    boom.image = pygame.Surface([100,100])
+    boom.rect = boom.image.get_rect()
+    boom.image.fill([255,255,255])
+    world.everybody.add(boom)
+
 
 class Panoptir:
     'first monster type'
@@ -43,6 +55,7 @@ class Panoptir:
         self.temp.rect = self.temp.image.get_rect()
         self.temp.radius = self.temp.rect.height/2
         self.temp.breakable = True
+        self.temp.deathAnimation = death
         
         self.timeToMove = -1
         self.moveCooldown = 0

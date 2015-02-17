@@ -95,7 +95,9 @@ class World:
                     p.sprite.rect.centerx += delta.x
                     p.sprite.rect.centery += delta.y
                 if getattr(c,'breakable',False):
+                    c.deathAnimation(self)
                     self.killMe.add(c)
+
                 #print p.health
             if p.health < 0:
                 self.killMe.add(p)
@@ -110,5 +112,5 @@ class World:
             k.kill()
         self.killMe.clear()
     def render(self):
-        'draw Everything'
+        'currently done in main'
         pass
