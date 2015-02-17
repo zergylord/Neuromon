@@ -21,9 +21,11 @@ class Panoptir:
         #iType: 0=human,1=bot,2=brain
 
         self.sprite = pygame.sprite.Sprite()
-        self.sprite.image = pygame.image.load("butterfly.jpg")
-        self.sprite.image = pygame.Surface.convert_alpha(self.sprite.image) 
+        self.sprite.image = pygame.image.load("eye.jpg")
+        self.sprite.image = pygame.transform.scale(self.sprite.image,[75,75])
         self.sprite.image.fill(self.tint,None,pygame.BLEND_ADD)
+        backColor = self.sprite.image.get_at((0,0))
+        self.sprite.image.set_colorkey(backColor)
         self.sprite.rect = self.sprite.image.get_rect()
         self.sprite.radius = self.sprite.rect.height/2
 
@@ -123,6 +125,8 @@ class Panoptir:
             self.tint[0] = int(np.max([0,np.min([(1.0-self.health/10.0)*255,255])]))
             print self.tint[0]
             self.sprite.image.fill(self.tint,None,pygame.BLEND_ADD)
+            backColor = self.sprite.image.get_at((0,0))
+            self.sprite.image.set_colorkey(backColor)
     def step(self,world):
         '''
             modifies the world object based on the action set of Panoptir. Action selection 

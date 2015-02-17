@@ -14,6 +14,8 @@ black = 0,0,0
 
 
 screen = pygame.display.set_mode(size,pygame.FULLSCREEN)
+background = pygame.image.load("floor.jpg")
+background = pygame.transform.scale(background,size)
 count = 0
 world = World()
 
@@ -40,6 +42,7 @@ while count < 100:
 
 
 
-    screen.fill(black)
+    #screen.fill(black)
+    screen.blit(background,[0,0])
     world.everybody.draw(screen)
     pygame.display.flip()
