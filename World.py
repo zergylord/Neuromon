@@ -2,6 +2,7 @@ import sys, pygame
 import numpy as np
 import matplotlib.pyplot as plt
 from Panoptir import *
+from GameObject import *
 from pygame import key as key
 from globals import *
 class World:
@@ -13,14 +14,14 @@ class World:
         #setup players
 
         bot = Panoptir(1)
-        bot.sprite.rect.centerx = 500
-        bot.sprite.rect.centery = 500
-        self.everybody.add(bot.sprite)
+        bot.rect.centerx = 500
+        bot.rect.centery = 500
+        self.everybody.add(bot)
         self.players.add(bot)
 
         player = Panoptir(0)
-        player.sprite.rect.centerx = 500
-        self.everybody.add(player.sprite)
+        player.rect.centerx = 500
+        self.everybody.add(player)
         self.players.add(player)
 
         self.baddies = pygame.sprite.Group()
@@ -31,6 +32,8 @@ class World:
         enemy.radius = enemy.rect.height/2
         #self.baddies.add(enemy)
         #self.everybody.add(enemy)
+
+        self.effects = pygame.sprite.Group()
     def start(self):
         for p in self.players:
             p.start(self)
@@ -42,9 +45,9 @@ class World:
         #print self.clock.get_fps()
         for p in self.players:
             p.step(self)
-            if (p.sprite.rect.left < 0 and p.velo[0] < 0) or (p.sprite.rect.right > width and p.velo[0]>0):
+            if (p.rect.left < 0 and p.velo[0] < 0) or (p.rect.right > width and p.velo[0]>0):
                 p.velo[0] = 0
-            if (p.sprite.rect.top < 0 and p.velo[1] < 0) or (p.sprite.rect.bottom > height and p.velo[1]>0):
+            if (p.rect.top < 0 and p.velo[1] < 0) or (p.rect.bottom > height and p.velo[1]>0):
                 p.velo[1] = 0
         self.environmentalActions()
         self.resolveConflicts()
@@ -54,14 +57,14 @@ class World:
             currently: invisible walls contain players to the field
         '''
         for p in self.players:
-            if (p.sprite.rect.left < 0 ):
-                p.sprite.rect.left = 0
-            if (p.sprite.rect.right > width ):
-                p.sprite.rect.right = width
-            if (p.sprite.rect.top < 0):
-                p.sprite.rect.top = 0 
-            if (p.sprite.rect.bottom > height):
-                p.sprite.rect.bottom = height
+            if (p.rect.left < 0 ):
+                p.rect.left = 0
+            if (p.rect.right > width ):
+                p.rect.right = width
+            if (p.rect.top < 0):
+                p.rect.top = 0 
+            if (p.rect.bottom > height):
+                p.rect.bottom = height
 
 
     def resolveConflicts(self):
@@ -81,19 +84,19 @@ class World:
         NOTE: currently collision only occur between players and stuff. Thus non-player entities can only collide with players and not each other!
         '''
         for p in self.players:
-            collSprites = pygame.sprite.spritecollide(p.sprite,self.everybody,False,pygame.sprite.collide_rect)
+            collSprites = pygame.sprite.spritecollide(p,self.everybody,False,pygame.sprite.collide_rect)
             for c in collSprites:
-                if p.sprite is c: #sprite always contained in the group
+                if p is c: #sprite always contained in the group
                     continue
                 p.damageToTake +=  getattr(c,'damage',0)
-                if not getattr(c,'passThrough',False):
-                    dx = p.sprite.rect.centerx-c.rect.centerx + np.random.rand() -.5
-                    dy = p.sprite.rect.centery-c.rect.centery + np.random.rand() -.5
+                if not getattr(c,'passThrough',True):
+                    dx = p.rect.centerx-c.rect.centerx + np.random.rand() -.5
+                    dy = p.rect.centery-c.rect.centery + np.random.rand() -.5
                     delta = pygame.math.Vector2(dx,dy) #cur distance between sprite centers
-                    desiredDis = p.sprite.radius + c.radius + 3 # how far away sprite must be to avoid collision
+                    desiredDis = p.radius + c.radius + 3 # how far away sprite must be to avoid collision
                     delta.scale_to_length(desiredDis) 
-                    p.sprite.rect.centerx += delta.x
-                    p.sprite.rect.centery += delta.y
+                    p.rect.centerx += delta.x
+                    p.rect.centery += delta.y
                 if getattr(c,'breakable',False):
                     c.deathAnimation(self)
                     self.killMe.add(c)
@@ -103,7 +106,11 @@ class World:
                 self.killMe.add(p)
     def resolveEffects(self):
         'handle spell effects, and other time dependent game state'
-        pass
+        curTime = pygame.time.get_ticks()
+        for e in self.effects:
+            if curTime > e.killTime:
+                self.killMe.add(e)
+
     def resolveDeath(self):
         'handle the removal of sprites and other objects from the game world'
         for k in self.killMe:

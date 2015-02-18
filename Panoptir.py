@@ -1,24 +1,14 @@
 import pygame.key as key
 import sys,pygame
 import numpy as np
+from GameObject import *
 from globals import *
-def death(world):
-    ''' placeholder death animation
-        should be a method, but isn't since
-        the parent is a Sprite
-        Also needs a timer and a kill
-    '''
-    boom = pygame.sprite.Sprite()
-    boom.image = pygame.Surface([100,100])
-    boom.rect = boom.image.get_rect()
-    boom.image.fill([255,255,255])
-    world.everybody.add(boom)
 
 
-class Panoptir:
+class Panoptir(GameObject):
     'first monster type'
     beamDuration = 1000
-    baseMoveDuration = 500 
+    baseMoveDuration = 100 
     distMoveDuration = 5000 #proportional to distance traveled
 
     horBeamImage = pygame.Surface([300,50])
@@ -26,36 +16,37 @@ class Panoptir:
     vertBeamImage = pygame.Surface([50,300])
     vertBeamImage.fill([255,20,70])
     def __init__(self, iType=1):
+        super(Panoptir,self).__init__()
+        self.passThrough = False
         self.damageToTake = 0
         self.tint = [50,20,iType*127,50]
         self.velo = [0,0] #never used due to Panoptirs movement type
         self.health = 10
         #iType: 0=human,1=bot,2=brain
 
-        self.sprite = pygame.sprite.Sprite()
-        self.sprite.image = pygame.image.load("eye.jpg")
-        self.sprite.image = pygame.transform.scale(self.sprite.image,[75,75])
-        self.sprite.image.fill(self.tint,None,pygame.BLEND_ADD)
-        backColor = self.sprite.image.get_at((0,0))
-        self.sprite.image.set_colorkey(backColor)
-        self.sprite.rect = self.sprite.image.get_rect()
-        self.sprite.radius = self.sprite.rect.height/2
+        #self = pygame.sprite.Sprite()
+        self.image = pygame.image.load("eye.jpg")
+        self.image = pygame.transform.scale(self.image,[75,75])
+        self.image.fill(self.tint,None,pygame.BLEND_ADD)
+        backColor = self.image.get_at((0,0))
+        self.image.set_colorkey(backColor)
+        self.rect = self.image.get_rect()
+        self.radius = self.rect.height/2
 
 
         self.beam = pygame.sprite.Sprite()
         self.beam.image = self.horBeamImage 
         self.beam.rect = self.beam.image.get_rect()
-        self.beam.horOffset = self.beam.rect.width/2 + self.sprite.rect.width/2 + 1
-        self.beam.vertOffset = self.beam.rect.width/2 + self.sprite.rect.height/2 + 1
+        self.beam.horOffset = self.beam.rect.width/2 + self.rect.width/2 + 1
+        self.beam.vertOffset = self.beam.rect.width/2 + self.rect.height/2 + 1
         self.beam.radius = self.beam.rect.height/2
 
-        self.temp = pygame.sprite.Sprite()
+        self.temp = GameObject()
         self.temp.image = pygame.Surface([100,100])
         self.temp.image.fill(self.tint)
         self.temp.rect = self.temp.image.get_rect()
         self.temp.radius = self.temp.rect.height/2
         self.temp.breakable = True
-        self.temp.deathAnimation = death
         
         self.timeToMove = -1
         self.moveCooldown = 0
@@ -100,8 +91,8 @@ class Panoptir:
             #pew = [0,0]
             #pew[np.random.randint(2)] = np.random.randint(2)*2 -1 #one dimension will be randomly assigned 1 or -1
             #moveTo = [np.random.randint(1,width),np.random.randint(1,height)]
-            horDiff = self.foe.sprite.rect.centerx - self.sprite.rect.centerx
-            vertDiff = self.foe.sprite.rect.centery - self.sprite.rect.centery
+            horDiff = self.foe.rect.centerx - self.rect.centerx
+            vertDiff = self.foe.rect.centery - self.rect.centery
             move = False
             moveTo = []
             pew = [0,0]
@@ -114,9 +105,9 @@ class Panoptir:
                 coin = np.random.randint(2)
                 if coin == 0:
                     x = np.random.randint(1,width)
-                    y = self.foe.sprite.rect.centery
+                    y = self.foe.rect.centery
                 else:
-                    x = self.foe.sprite.rect.centerx
+                    x = self.foe.rect.centerx
                     y = np.random.randint(1,height)
                 moveTo = [x,y]
             return move,pew,moveTo
@@ -132,12 +123,12 @@ class Panoptir:
         if self.damageToTake != 0:
             self.health -= self.damageToTake
             self.damageToTake = 0
-            self.sprite.image.fill(self.tint,None,pygame.BLEND_SUB)
+            self.image.fill(self.tint,None,pygame.BLEND_SUB)
             self.tint[0] = int(np.max([0,np.min([(1.0-self.health/10.0)*255,255])]))
-            print self.tint[0]
-            self.sprite.image.fill(self.tint,None,pygame.BLEND_ADD)
-            backColor = self.sprite.image.get_at((0,0))
-            self.sprite.image.set_colorkey(backColor)
+            #print self.tint[0]
+            self.image.fill(self.tint,None,pygame.BLEND_ADD)
+            backColor = self.image.get_at((0,0))
+            self.image.set_colorkey(backColor)
     def step(self,world):
         '''
             modifies the world object based on the action set of Panoptir. Action selection 
@@ -151,15 +142,15 @@ class Panoptir:
                 self.timeToMove = -1
                 self.moveCooldown = pygame.time.get_ticks() + 1000 #can't move again for a second
             elif move and pygame.time.get_ticks() > self.moveCooldown: #start movement
-                moveDis = np.linalg.norm(np.subtract(mousePos,self.sprite.rect.center))
+                moveDis = np.linalg.norm(np.subtract(mousePos,self.rect.center))
                 self.timeToMove = pygame.time.get_ticks() + self.baseMoveDuration + self.distMoveDuration*(moveDis/width)
                 self.temp.rect.centerx,self.temp.rect.centery = mousePos
                 world.everybody.add(self.temp)
             else: #not moving
                 self.damageToTake += 1.0/(fps) #penalty not moving
         if self.timeToMove > 0 and pygame.time.get_ticks() > self.timeToMove: #complete movement
-            self.sprite.rect.centerx  = self.temp.rect.centerx
-            self.sprite.rect.centery  = self.temp.rect.centery
+            self.rect.centerx  = self.temp.rect.centerx
+            self.rect.centery  = self.temp.rect.centery
             self.temp.kill()
             self.timeToMove = -1
             self.moveCooldown = pygame.time.get_ticks() + 100 #small delay between moves
@@ -174,8 +165,8 @@ class Panoptir:
                 else:
                     self.beam.image = self.vertBeamImage
                 self.beam.rect = self.beam.image.get_rect()
-                self.beam.rect.centerx  = self.sprite.rect.centerx + pew[0]*self.beam.horOffset
-                self.beam.rect.centery  = self.sprite.rect.centery + pew[1]*self.beam.vertOffset
+                self.beam.rect.centerx  = self.rect.centerx + pew[0]*self.beam.horOffset
+                self.beam.rect.centery  = self.rect.centery + pew[1]*self.beam.vertOffset
                 self.beam.damage = 5.0/(fps*self.beamDuration/1000)
                 self.beam.passThrough = True
                 world.everybody.add(self.beam)
@@ -187,7 +178,6 @@ class Panoptir:
     def kill(self):
         self.temp.kill()
         self.beam.kill()
-        self.sprite.kill()
 
 
 
