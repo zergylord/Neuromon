@@ -5,7 +5,7 @@ from GameObject import *
 from globals import *
 
 
-class Panoptir(GameObject):
+class Panoptir(GameObject,Living,Dying):
     'first monster type'
     beamDuration = 1000
     baseMoveDuration = 100 
@@ -32,6 +32,7 @@ class Panoptir(GameObject):
         self.image.set_colorkey(backColor)
         self.rect = self.image.get_rect()
         self.radius = self.rect.height/2
+        
 
 
         self.beam = pygame.sprite.Sprite()
@@ -41,12 +42,13 @@ class Panoptir(GameObject):
         self.beam.vertOffset = self.beam.rect.width/2 + self.rect.height/2 + 1
         self.beam.radius = self.beam.rect.height/2
 
-        self.temp = GameObject()
+        self.temp = FragileObject()
         self.temp.image = pygame.Surface([100,100])
         self.temp.image.fill(self.tint)
         self.temp.rect = self.temp.image.get_rect()
         self.temp.radius = self.temp.rect.height/2
-        self.temp.breakable = True
+
+
         
         self.timeToMove = -1
         self.moveCooldown = 0
@@ -54,6 +56,8 @@ class Panoptir(GameObject):
 
         self.pew = [0,0]
         self.iType = iType
+
+        self.setupHealthBar()
     def start(self,world):
         if self.iType == 0:
             pass
@@ -121,14 +125,15 @@ class Panoptir(GameObject):
             e.g. health change leads to new tint
         '''
         if self.damageToTake != 0:
-            self.health -= self.damageToTake
+            self.health = np.min([10,self.health-self.damageToTake])
             self.damageToTake = 0
-            self.image.fill(self.tint,None,pygame.BLEND_SUB)
-            self.tint[0] = int(np.max([0,np.min([(1.0-self.health/10.0)*255,255])]))
-            #print self.tint[0]
-            self.image.fill(self.tint,None,pygame.BLEND_ADD)
-            backColor = self.image.get_at((0,0))
-            self.image.set_colorkey(backColor)
+            self.updateHealthBar()
+            ''' tint style damage viz'''
+            #self.image.fill(self.tint,None,pygame.BLEND_SUB)
+            #self.tint[0] = int(np.max([0,np.min([(1.0-self.health/10.0)*255,255])]))
+            #self.image.fill(self.tint,None,pygame.BLEND_ADD)
+            #backColor = self.image.get_at((0,0))
+            #self.image.set_colorkey(backColor)
     def step(self,world):
         '''
             modifies the world object based on the action set of Panoptir. Action selection 
