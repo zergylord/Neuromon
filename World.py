@@ -5,7 +5,15 @@ from Panoptir import *
 from GameObject import *
 from pygame import key as key
 from globals import *
-class World:
+
+from rlglue.environment.Environment import Environment
+from rlglue.environment import EnvironmentLoader
+from rlglue.types import Observation
+from rlglue.types import Action
+from rlglue.types import Reward_observation_terminal
+class World(Environment):
+    def env_init(self):
+            return "VERSION RL-Glue-3.0"
     def __init__(self):
         self.clock = pygame.time.Clock()
         self.killMe = set()
@@ -34,9 +42,18 @@ class World:
         #self.everybody.add(enemy)
 
         self.effects = pygame.sprite.Group()
+
+        self.screen = pygame.display.set_mode(size)#,pygame.FULLSCREEN)
+        self.background = pygame.image.load("floor.jpg")
+        self.background = pygame.transform.scale(self.background,size)
     def start(self):
         for p in self.players:
             p.start(self)
+    def env_start(self):
+        self.start()
+        returnObs=Observation()
+        returnObs.intArray=[1]
+        return returnObs
     def step(self):
         '''
         single step of logic and rendering, currently called 60 times per second
@@ -65,6 +82,17 @@ class World:
                 p.rect.top = 0 
             if (p.rect.bottom > height):
                 p.rect.bottom = height
+    def env_step(self):
+        self.step()
+        theObs=Observation()
+        theObs.intArray=[self.currentState]
+        
+        returnRO=Reward_observation_terminal()
+        returnRO.r=theReward
+        returnRO.o=theObs
+        returnRO.terminal=episodeOver
+        
+        return returnRO
 
 
     def resolveConflicts(self):
@@ -119,5 +147,38 @@ class World:
             k.kill()
         self.killMe.clear()
     def render(self):
-        'currently done in main'
-        pass
+        'was done in main'
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: sys.exit()
+        curPressed = key.get_pressed()
+        if curPressed[pygame.K_ESCAPE]:
+            pygame.event.post(pygame.event.Event(pygame.QUIT))
+        if curPressed[pygame.K_p]:
+            pixels = np.array(pygame.surfarray.array2d(screen))
+            plt.imshow(pixels)
+            plt.show()
+        self.screen.blit(background,[0,0])
+        self.everybody.draw(self.screen)
+        self.effects.draw(self.screen)
+        pygame.display.flip()
+if __name__=="__main__":
+    pygame.init()
+    useGlue = False
+    black = 0,0,0
+    screen = pygame.display.set_mode(size)#,pygame.FULLSCREEN)
+    background = pygame.image.load("floor.jpg")
+    background = pygame.transform.scale(background,size)
+    count = 0
+    world = World()
+    if len(sys.argv) > 1:
+        iType = sys.argv[1]
+        world.players[0].iType = int(iType)
+    if useGlue:
+        EnvironmentLoader.loadEnvironment(World())
+        taskSpec = RLGlue.RL_init()
+        RLGlue.RL_start()
+        stepResponse = RLGlue.RL_step()
+    else:
+        world.start()
+        while True:
+            world.step()

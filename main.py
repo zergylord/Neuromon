@@ -5,8 +5,13 @@ from Panoptir import *
 from World import *
 from pygame import key as key
 from globals import *
+import rlglue.RLGlue as RLGlue
+from rlglue.environment import EnvironmentLoader as EnvironmentLoader
+
 pygame.init()
 
+
+useGlue = False
 
 velo = [0,0]
 speed = 1;
@@ -23,9 +28,16 @@ if len(sys.argv) > 1:
     iType = sys.argv[1]
     world.players[0].iType = int(iType)
 
-world.start()
+if useGlue:
+    EnvironmentLoader.loadEnvironment(World())
+    taskSpec = RLGlue.RL_init()
+    RLGlue.RL_start()
+    stepResponse = RLGlue.RL_step()
+else:
+    world.start()
+
 #main game loop
-while count < 100:
+while (not useGlue) or stepResponse.terminal != 1:
     #count+= 1
     for event in pygame.event.get():
         if event.type == pygame.QUIT: sys.exit()
@@ -38,7 +50,10 @@ while count < 100:
         plt.imshow(pixels)
         plt.show()
 
-    world.step()
+    if useGlue:
+        stepResponse = RLGlue.RL_step()
+    else:
+        world.step()
 
 
 
@@ -47,3 +62,6 @@ while count < 100:
     world.everybody.draw(screen)
     world.effects.draw(screen)
     pygame.display.flip()
+
+if useGlue:
+    RLGlue.RL_cleanup()
