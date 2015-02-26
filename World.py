@@ -1,5 +1,6 @@
 import sys, pygame
 import numpy as np
+from scipy import misc
 import matplotlib.pyplot as plt
 from Panoptir import *
 from GameObject import *
@@ -58,8 +59,11 @@ class World(Environment):
         '''
         single step of logic and rendering, currently called 60 times per second
         '''
+        pixels = pygame.surfarray.array2d(screen)
+        theObs=Observation()
+        theObs.intArray=misc.imresize(pixels,(84,84)).flatten().tolist()
         self.clock.tick(fps)
-        #print self.clock.get_fps()
+        print self.clock.get_fps()
         for p in self.players:
             p.step(self)
             if (p.rect.left < 0 and p.velo[0] < 0) or (p.rect.right > width and p.velo[0]>0):
@@ -82,15 +86,16 @@ class World(Environment):
                 p.rect.top = 0 
             if (p.rect.bottom > height):
                 p.rect.bottom = height
-    def env_step(self):
+    def env_step(self,action):
         self.step()
+        pixels = pygame.surfarray.array2d(screen)
         theObs=Observation()
-        theObs.intArray=[self.currentState]
+        theObs.intArray=misc.imresize(pixels,(84,84)).flatten().tolist()
         
         returnRO=Reward_observation_terminal()
-        returnRO.r=theReward
+        returnRO.r=1 #reward goes here
         returnRO.o=theObs
-        returnRO.terminal=episodeOver
+        returnRO.terminal= 0
         
         return returnRO
 
@@ -163,21 +168,21 @@ class World(Environment):
         pygame.display.flip()
 if __name__=="__main__":
     pygame.init()
-    useGlue = False
+    if len(sys.argv) > 1:
+        useGlue = sys.argv[1]
+    else:
+        useGlue = False
     black = 0,0,0
     screen = pygame.display.set_mode(size)#,pygame.FULLSCREEN)
     background = pygame.image.load("floor.jpg")
     background = pygame.transform.scale(background,size)
     count = 0
     world = World()
-    if len(sys.argv) > 1:
-        iType = sys.argv[1]
+    if len(sys.argv) > 2:
+        iType = sys.argv[2]
         world.players[0].iType = int(iType)
     if useGlue:
         EnvironmentLoader.loadEnvironment(World())
-        taskSpec = RLGlue.RL_init()
-        RLGlue.RL_start()
-        stepResponse = RLGlue.RL_step()
     else:
         world.start()
         while True:
