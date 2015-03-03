@@ -3,6 +3,7 @@ import numpy as np
 from scipy import misc
 import matplotlib.pyplot as plt
 from Panoptir import *
+from Slogun import *
 from GameObject import *
 from pygame import key as key
 from globals import *
@@ -15,23 +16,28 @@ from rlglue.types import Reward_observation_terminal
 class World(Environment):
     def env_init(self):
             return "VERSION RL-Glue-3.0"
-    def __init__(self):
+    def __init__(self,p1Type,p2Type):
         self.clock = pygame.time.Clock()
         self.killMe = set()
         self.players = set()
+        self.bullets = pygame.sprite.Group()
         self.everybody = pygame.sprite.Group()
         #setup players
 
-        bot = Panoptir(1)
-        bot.rect.centerx = 500
-        bot.rect.centery = 500
-        self.everybody.add(bot)
-        self.players.add(bot)
+        p1 = Slogun(p1Type)
+        p1.rect.centerx = 500
+        p1.rect.centery = 500
+        self.everybody.add(p1)
+        self.players.add(p1)
+        if p1Type == 2:
+            self.agent = p1
 
-        player = Panoptir(0)
-        player.rect.centerx = 500
-        self.everybody.add(player)
-        self.players.add(player)
+        p2 = Panoptir(p2Type)
+        p2.rect.centerx = 500
+        self.everybody.add(p2)
+        self.players.add(p2)
+        if p2Type == 2:
+            self.agent = p2
 
         self.baddies = pygame.sprite.Group()
         enemy = pygame.sprite.Sprite()
@@ -59,17 +65,22 @@ class World(Environment):
         '''
         single step of logic and rendering, currently called 60 times per second
         '''
-        pixels = pygame.surfarray.array2d(screen)
-        theObs=Observation()
-        theObs.intArray=misc.imresize(pixels,(84,84)).flatten().tolist()
         self.clock.tick(fps)
-        print self.clock.get_fps()
+        #print self.clock.get_fps()
         for p in self.players:
             p.step(self)
             if (p.rect.left < 0 and p.velo[0] < 0) or (p.rect.right > width and p.velo[0]>0):
                 p.velo[0] = 0
             if (p.rect.top < 0 and p.velo[1] < 0) or (p.rect.bottom > height and p.velo[1]>0):
                 p.velo[1] = 0
+        for b in self.bullets:
+            b.step()
+            if getattr(b,'bounce',False):
+                if (b.rect.left < 0 and b.velo[0] < 0) or (b.rect.right > width and b.velo[0]>0):
+                    b.velo[0] *= -1
+                if (b.rect.top < 0 and b.velo[1] < 0) or (b.rect.bottom > height and b.velo[1]>0):
+                    b.velo[1] *= -1
+
         self.environmentalActions()
         self.resolveConflicts()
         self.render()
@@ -87,6 +98,7 @@ class World(Environment):
             if (p.rect.bottom > height):
                 p.rect.bottom = height
     def env_step(self,action):
+        self.agent.action = action
         self.step()
         pixels = pygame.surfarray.array2d(screen)
         theObs=Observation()
@@ -169,7 +181,7 @@ class World(Environment):
 if __name__=="__main__":
     pygame.init()
     if len(sys.argv) > 1:
-        useGlue = sys.argv[1]
+        useGlue = (sys.argv[1] == 'True')
     else:
         useGlue = False
     black = 0,0,0
@@ -177,13 +189,18 @@ if __name__=="__main__":
     background = pygame.image.load("floor.jpg")
     background = pygame.transform.scale(background,size)
     count = 0
-    world = World()
     if len(sys.argv) > 2:
-        iType = sys.argv[2]
-        world.players[0].iType = int(iType)
-    if useGlue:
-        EnvironmentLoader.loadEnvironment(World())
+        p1Type = int(sys.argv[2])
     else:
+        p1Type = 0
+    if len(sys.argv) > 3:
+        p2Type = int(sys.argv[3])
+    else:
+        p2Type = 1
+    if useGlue:
+        EnvironmentLoader.loadEnvironment(World(p1Type,2))
+    else:
+        world = World(p1Type,p2Type)
         world.start()
         while True:
             world.step()

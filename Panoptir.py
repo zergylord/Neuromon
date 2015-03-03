@@ -5,7 +5,7 @@ from GameObject import *
 from globals import *
 
 
-class Panoptir(GameObject,Living,Dying):
+class Panoptir(Mon):
     'first monster type'
     beamDuration = 1000
     baseMoveDuration = 100 
@@ -16,25 +16,8 @@ class Panoptir(GameObject,Living,Dying):
     vertBeamImage = pygame.Surface([50,300])
     vertBeamImage.fill([255,20,70])
     def __init__(self, iType=1):
-        super(Panoptir,self).__init__()
-        self.passThrough = False
-        self.damageToTake = 0
-        self.tint = [50,20,iType*127,50]
-        self.velo = [0,0] #never used due to Panoptirs movement type
-        self.health = 10
-        #iType: 0=human,1=bot,2=brain
-
-        #self = pygame.sprite.Sprite()
-        self.image = pygame.image.load("eye.jpg")
-        self.image = pygame.transform.scale(self.image,[75,75])
-        self.image.fill(self.tint,None,pygame.BLEND_ADD)
-        backColor = self.image.get_at((0,0))
-        self.image.set_colorkey(backColor)
-        self.rect = self.image.get_rect()
-        self.radius = self.rect.height/2
-        
-
-
+        super(Panoptir,self).__init__(iType)
+        self.setupImage('eye.jpg')
         self.beam = pygame.sprite.Sprite()
         self.beam.image = self.horBeamImage 
         self.beam.rect = self.beam.image.get_rect()
@@ -48,23 +31,16 @@ class Panoptir(GameObject,Living,Dying):
         self.temp.rect = self.temp.image.get_rect()
         self.temp.radius = self.temp.rect.height/2
 
-
-        
         self.timeToMove = -1
         self.moveCooldown = 0
-
-
         self.pew = [0,0]
-        self.iType = iType
-
-        self.setupHealthBar()
     def start(self,world):
         if self.iType == 0:
             pass
         elif self.iType == 1:
             self.foe = world.players.difference(set([self])).pop()
         elif self.iType == 2:
-            pass
+            self.action = [1,1,0,1,1]
         else:
             raise ValueError("Not a valid player type!")
 
@@ -116,24 +92,13 @@ class Panoptir(GameObject,Living,Dying):
                 moveTo = [x,y]
             return move,pew,moveTo
         elif self.iType == 2:
-            pass
+            move = self.action[0]
+            pew = self.action[1:3]
+            assert 0 in pew
+            moveTo = self.action[3:5]
+            return move,pew,moveTo
         else:
             raise ValueError("Not a valid player type!")
-    def update(self,world):
-        '''
-            handles changes in state and there effects
-            e.g. health change leads to new tint
-        '''
-        if self.damageToTake != 0:
-            self.health = np.min([10,self.health-self.damageToTake])
-            self.damageToTake = 0
-            self.updateHealthBar()
-            ''' tint style damage viz'''
-            #self.image.fill(self.tint,None,pygame.BLEND_SUB)
-            #self.tint[0] = int(np.max([0,np.min([(1.0-self.health/10.0)*255,255])]))
-            #self.image.fill(self.tint,None,pygame.BLEND_ADD)
-            #backColor = self.image.get_at((0,0))
-            #self.image.set_colorkey(backColor)
     def step(self,world):
         '''
             modifies the world object based on the action set of Panoptir. Action selection 
