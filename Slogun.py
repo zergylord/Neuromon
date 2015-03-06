@@ -11,7 +11,7 @@ class Slogun(Mon):
     speed = 200.0/fps #pixels per second
     def __init__(self,iType=1):
         super(Slogun,self).__init__(iType)
-        self.setupImage('eye3.jpg')
+        self.setupImage('eye2.jpg')
         self.timeToShoot = -1
         self.heading = [1,0]
 
@@ -56,12 +56,7 @@ class Slogun(Mon):
         return velo,shoot
     def canShoot(self):
         return pygame.time.get_ticks() > self.timeToShoot
-    def step(self,world):
-        '''
-        deal with movement of body and bullet
-        '''
-        self.update(world)
-        velo, shoot = self.getInput(world)
+    def handleMove(self,world,velo):
         'set the heading'
         if velo[0] > 0:
             self.heading = [1,0]
@@ -72,6 +67,8 @@ class Slogun(Mon):
                 self.heading = [0,1]
             elif velo[1] < 0:
                 self.heading = [0,-1]
+        self.rect = self.rect.move(velo)
+    def handleAttack(self,world,shoot):
         if shoot and self.canShoot():
             bullet = Bullet(map(mul,self.heading,[10,10]),1)
             bullet.image,bullet.rect = LoadImage('energy-ball.jpg',[100,100])
@@ -79,6 +76,13 @@ class Slogun(Mon):
             world.bullets.add(bullet)
             world.everybody.add(bullet)
             self.timeToShoot = pygame.time.get_ticks() + 1000
+    def step(self,world):
+        '''
+        deal with movement of body and bullet
+        '''
+        self.update(world)
+        velo, shoot = self.getInput(world)
+        self.handleMove(world,velo)
+        self.handleAttack(world,shoot)
 
-        self.rect = self.rect.move(velo)
 

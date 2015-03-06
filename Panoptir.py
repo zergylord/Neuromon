@@ -3,6 +3,7 @@ import sys,pygame
 import numpy as np
 from GameObject import *
 from globals import *
+from utility import *
 
 
 class Panoptir(Mon):
@@ -26,9 +27,8 @@ class Panoptir(Mon):
         self.beam.radius = self.beam.rect.height/2
 
         self.temp = FragileObject()
-        self.temp.image = pygame.Surface([100,100])
-        self.temp.image.fill(self.tint)
-        self.temp.rect = self.temp.image.get_rect()
+        self.temp.image,self.temp.rect = LoadImage('hole2.png',[100,100]) 
+        #self.temp.image.fill(self.tint)
         self.temp.radius = self.temp.rect.height/2
 
         self.timeToMove = -1
@@ -99,13 +99,7 @@ class Panoptir(Mon):
             return move,pew,moveTo
         else:
             raise ValueError("Not a valid player type!")
-    def step(self,world):
-        '''
-            modifies the world object based on the action set of Panoptir. Action selection 
-            delegated to getInput()
-        '''
-        self.update(world)
-        move, pew,mousePos = self.getInput(world)
+    def handleMove(self,world,move,mousePos):
         #check for movement events
         if not self.temp.alive():
             if self.timeToMove > 0: #temp died before movement, cancel movement
@@ -125,6 +119,7 @@ class Panoptir(Mon):
             self.timeToMove = -1
             self.moveCooldown = pygame.time.get_ticks() + 100 #small delay between moves
             self.damageToTake += -1 #bonus for completing a move
+    def handleAttack(self,world,pew):
         #check for attack events
         if self.beam.alive():
             if pygame.time.get_ticks() > self.beamCutoffTime:
@@ -145,6 +140,15 @@ class Panoptir(Mon):
                     self.timeToMove = self.beamCutoffTime #delay move until attack finishes 
                 else:
                     self.moveCooldown = self.beamCutoffTime #can't start a move during an attack
+    def step(self,world):
+        '''
+            modifies the world object based on the action set of Panoptir. Action selection 
+            delegated to getInput()
+        '''
+        self.update(world)
+        move, pew,mousePos = self.getInput(world)
+        self.handleMove(world,move,mousePos)
+        self.handleAttack(world,pew)
     def kill(self):
         self.temp.kill()
         self.beam.kill()
