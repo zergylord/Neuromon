@@ -66,7 +66,7 @@ class World(Environment):
         single step of logic and rendering, currently called 60 times per second
         '''
         self.clock.tick(fps)
-        #print self.clock.get_fps()
+        print self.clock.get_fps()
         for p in self.players:
             p.step(self)
             if (p.rect.left < 0 and p.velo[0] < 0) or (p.rect.right > width and p.velo[0]>0):

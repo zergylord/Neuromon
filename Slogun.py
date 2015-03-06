@@ -4,6 +4,7 @@ import numpy as np
 from GameObject import *
 from operator import *
 from globals import *
+from utility import *
 
 class Slogun(Mon):
     '''Move fast, shoot slow'''
@@ -73,9 +74,7 @@ class Slogun(Mon):
                 self.heading = [0,-1]
         if shoot and self.canShoot():
             bullet = Bullet(map(mul,self.heading,[10,10]),1)
-            bullet.image = pygame.Surface([100,100])
-            bullet.image.fill(self.tint)
-            bullet.rect = bullet.image.get_rect()
+            bullet.image,bullet.rect = LoadImage('energy-ball.jpg',[100,100])
             bullet.rect.center = map(add,self.rect.center,map(mul,self.heading,[100,100])) 
             world.bullets.add(bullet)
             world.everybody.add(bullet)

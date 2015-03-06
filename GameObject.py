@@ -25,9 +25,9 @@ class Dying(object):
             Also needs a timer and a kill
         '''
         boom = pygame.sprite.Sprite()
-        boom.image = pygame.Surface([100,100])
+        boom.image = pygame.image.load('explosion.png')
+        boom.image = pygame.transform.scale(boom.image,[75,75])
         boom.rect = self.rect.copy()
-        boom.image.fill([255,255,255])
         boom.killTime = pygame.time.get_ticks() + 1000 #1 second duration
         world.effects.add(boom)
 ''' Game Object Heirarchy'''
