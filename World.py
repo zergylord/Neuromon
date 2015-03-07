@@ -24,7 +24,7 @@ class World(Environment):
         self.everybody = pygame.sprite.Group()
         #setup players
 
-        p1 = Panoptir(p1Type)
+        p1 = Slogun(p1Type)
         p1.rect.centerx = 500
         p1.rect.centery = 500
         self.everybody.add(p1)
