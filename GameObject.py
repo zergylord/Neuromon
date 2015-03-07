@@ -53,7 +53,6 @@ class Mon(GameObject,Living,Dying):
         self.passThrough = False
         self.damageToTake = 0
         self.tint = [50,20,iType*127,50]
-        self.velo = [0,0] #never used due to Panoptirs movement type
         self.health = 10
         self.iType = iType
     def setupImage(self,filename):
@@ -81,11 +80,19 @@ class Mon(GameObject,Living,Dying):
             #backColor = self.image.get_at((0,0))
             #self.image.set_colorkey(backColor)
     def step(self,world):
-        '''should call update() and getInput()'''
-        pass
+        '''
+        update health, movement, and attack
+        '''
+        self.update(world)
+        if self.iType == 1:
+            self.botAction = self.bot.step(self,world)
+        self.move.handleMove(self,world)
+        self.attack.handleAttack(self,world)
     def kill(self):
-        '''kill any child objects'''
-        pass
+        '''remove any child objects'''
+        self.move.kill()
+        self.attack.kill()
+      
 
 
 

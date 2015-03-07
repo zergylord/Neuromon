@@ -17,7 +17,6 @@ class Panoptir(Mon):
         self.setupImage('eye.jpg')
         self.attack = Beam(self)
         self.move = Dig(self)
-        self.pew = [0,0]
     def start(self,world):
         if self.iType == 0:
             pass
@@ -28,19 +27,6 @@ class Panoptir(Mon):
         else:
             raise ValueError("Not a valid player type!")
 
-    def step(self,world):
-        '''
-            modifies the world object based on the action set of Panoptir. Action selection 
-            delegated to getInput()
-        '''
-        self.update(world)
-        if self.iType == 1:
-            self.botAction = self.bot.step(self,world)
-        self.move.handleMove(self,world)
-        self.attack.handleAttack(self,world)
-    def kill(self):
-        self.move.kill()
-        self.attack.kill()
 
 
 

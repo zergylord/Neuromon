@@ -24,7 +24,7 @@ class World(Environment):
         self.everybody = pygame.sprite.Group()
         #setup players
 
-        p1 = Slogun(p1Type)
+        p1 = Panoptir(p1Type)
         p1.rect.centerx = 500
         p1.rect.centery = 500
         self.everybody.add(p1)
@@ -69,10 +69,10 @@ class World(Environment):
         print self.clock.get_fps()
         for p in self.players:
             p.step(self)
-            if (p.rect.left < 0 and p.velo[0] < 0) or (p.rect.right > width and p.velo[0]>0):
-                p.velo[0] = 0
-            if (p.rect.top < 0 and p.velo[1] < 0) or (p.rect.bottom > height and p.velo[1]>0):
-                p.velo[1] = 0
+            if (p.rect.left < 0 and p.move.velo[0] < 0) or (p.rect.right > width and p.move.velo[0]>0):
+                p.move.velo[0] = 0
+            if (p.rect.top < 0 and p.move.velo[1] < 0) or (p.rect.bottom > height and p.move.velo[1]>0):
+                p.move.velo[1] = 0
         for b in self.bullets:
             b.step()
             if getattr(b,'bounce',False):
