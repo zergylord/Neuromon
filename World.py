@@ -4,6 +4,7 @@ from scipy import misc
 import matplotlib.pyplot as plt
 from Panoptir import *
 from Slogun import *
+from Slobeam import *
 from GameObject import *
 from pygame import key as key
 from globals import *
@@ -24,7 +25,7 @@ class World(Environment):
         self.everybody = pygame.sprite.Group()
         #setup players
 
-        p1 = Panoptir(p1Type)
+        p1 = VarMon([Dig,Beam],'eye2.jpg',p1Type)
         p1.rect.centerx = 500
         p1.rect.centery = 500
         self.everybody.add(p1)
@@ -32,7 +33,7 @@ class World(Environment):
         if p1Type == 2:
             self.agent = p1
 
-        p2 = Panoptir(p2Type)
+        p2 = VarMon([Dig,Beam],'eye2.jpg',p2Type,BeamDig)
         p2.rect.centerx = 500
         self.everybody.add(p2)
         self.players.add(p2)
@@ -66,13 +67,13 @@ class World(Environment):
         single step of logic and rendering, currently called 60 times per second
         '''
         self.clock.tick(fps)
-        print self.clock.get_fps()
+        #print self.clock.get_fps()
         for p in self.players:
             p.step(self)
-            if (p.rect.left < 0 and p.move.velo[0] < 0) or (p.rect.right > width and p.move.velo[0]>0):
-                p.move.velo[0] = 0
-            if (p.rect.top < 0 and p.move.velo[1] < 0) or (p.rect.bottom > height and p.move.velo[1]>0):
-                p.move.velo[1] = 0
+            if (p.rect.left < 0 and p.velo[0] < 0) or (p.rect.right > width and p.velo[0]>0):
+                p.velo[0] = 0
+            if (p.rect.top < 0 and p.velo[1] < 0) or (p.rect.bottom > height and p.velo[1]>0):
+                p.velo[1] = 0
         for b in self.bullets:
             b.step()
             if getattr(b,'bounce',False):
@@ -98,7 +99,7 @@ class World(Environment):
             if (p.rect.bottom > height):
                 p.rect.bottom = height
     def env_step(self,action):
-        self.agent.action = action
+        self.agent.botAction = action
         self.step()
         pixels = pygame.surfarray.array2d(screen)
         theObs=Observation()
@@ -146,7 +147,7 @@ class World(Environment):
                     c.deathAnimation(self)
                     self.killMe.add(c)
 
-                #print p.health
+               #print p.health
             if p.health < 0:
                 self.killMe.add(p)
     def resolveEffects(self):

@@ -55,6 +55,8 @@ class Mon(GameObject,Living,Dying):
         self.tint = [50,20,iType*127,50]
         self.health = 10
         self.iType = iType
+        self.heading = [1,0] #which cardinal direction you face
+        self.velo = [0,0]
     def setupImage(self,filename):
         self.image = pygame.image.load(filename)
         self.image = pygame.transform.scale(self.image,[75,75])
@@ -86,12 +88,53 @@ class Mon(GameObject,Living,Dying):
         self.update(world)
         if self.iType == 1:
             self.botAction = self.bot.step(self,world)
-        self.move.handleMove(self,world)
-        self.attack.handleAttack(self,world)
+        for m in self.move:
+            if m == None:
+                continue
+            m.handleMove(self,world)
+        #self.attack.handleAttack(self,world)
     def kill(self):
         '''remove any child objects'''
-        self.move.kill()
-        self.attack.kill()
+        for m in self.move:
+            if m is None:
+                continue
+            m.kill()
+class VarMon(Mon):
+    def __init__(self,moveList,imageFileName,iType=0,bot=None):
+        super(VarMon,self).__init__(iType)
+        self.setupImage(imageFileName)
+        #self.attack = attack(self)
+        self.move = 6*[None]
+        self.chargeup = []
+        self.cooldown = []
+        for m in moveList:
+            if self.move[m.slot] is not None:
+                continue
+            self.move[m.slot] = m(self)
+        #self.move = move(self)
+        self.bot = bot
+    def getMoveProp(self,propName):
+        ret = []
+        for m in self.move:
+            if hasattr(m,propName):
+                ret.append(m.cooldown)
+        return ret
+    def setMoveProp(self,propName,vals):
+        count = 0
+        for m in self.move:
+            if hasattr(m,propName):
+                m.cooldown = vals[count]
+                count += 1
+
+    def start(self,world):
+        if self.iType == 0:
+            pass
+        elif self.iType == 1:
+            self.bot = self.bot(self,world)
+        elif self.iType == 2:
+            self.botAction = [1,1,0,1,1] #TODO:fix this
+        else:
+            raise ValueError("Not a valid player type!")
       
 
 
