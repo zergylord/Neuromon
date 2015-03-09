@@ -25,35 +25,33 @@ class World(Environment):
         self.everybody = pygame.sprite.Group()
         #setup players
 
-        p1 = VarMon([Dig,Beam],'eye2.jpg',p1Type)
+        p1 = VarMon([SharpWalk,Beam],'eye2.jpg',p1Type)
         p1.rect.centerx = 500
         p1.rect.centery = 500
         self.everybody.add(p1)
         self.players.add(p1)
         if p1Type == 2:
             self.agent = p1
-
+        
         p2 = VarMon([Dig,Beam],'eye2.jpg',p2Type,BeamDig)
         p2.rect.centerx = 500
         self.everybody.add(p2)
         self.players.add(p2)
         if p2Type == 2:
             self.agent = p2
-
-        self.baddies = pygame.sprite.Group()
-        enemy = pygame.sprite.Sprite()
-        enemy.image = pygame.image.load("butterfly.jpg")
-        enemy.rect = enemy.image.get_rect()
-        enemy.rect = enemy.rect.move([300,300])
-        enemy.radius = enemy.rect.height/2
-        #self.baddies.add(enemy)
-        #self.everybody.add(enemy)
-
+        
         self.effects = pygame.sprite.Group()
 
-        self.screen = pygame.display.set_mode(size)#,pygame.FULLSCREEN)
-        self.background = pygame.image.load("floor.jpg")
+        self.background = pygame.image.load("floor.jpg").convert()
         self.background = pygame.transform.scale(self.background,size)
+        self.portraitBackground = pygame.image.load('border.jpg').convert()
+        self.portraitBackground = pygame.transform.scale(self.portraitBackground,[size[0],int(size[1]/3.0)]) 
+        man = pygame.image.load('MM6Man.bmp').convert()
+        man = pygame.transform.scale(man,[int(size[0]*(1/8.0)),int(size[1]/4.0)])
+        screen.blit(self.background,[0,0])
+        screen.blit(self.portraitBackground,[0,size[1]])
+        screen.blit(man,[0+int(man.get_width()/2.55),size[1]+int(man.get_height()/7.5)])
+        pygame.display.update()#the only time portrait area is updated
     def start(self):
         for p in self.players:
             p.start(self)
@@ -67,7 +65,7 @@ class World(Environment):
         single step of logic and rendering, currently called 60 times per second
         '''
         self.clock.tick(fps)
-        #print self.clock.get_fps()
+        print self.clock.get_fps()
         for p in self.players:
             p.step(self)
             if (p.rect.left < 0 and p.velo[0] < 0) or (p.rect.right > width and p.velo[0]>0):
@@ -175,20 +173,20 @@ class World(Environment):
             pixels = np.array(pygame.surfarray.array2d(screen))
             plt.imshow(pixels)
             plt.show()
-        self.screen.blit(background,[0,0])
-        self.everybody.draw(self.screen)
-        self.effects.draw(self.screen)
-        pygame.display.flip()
+        screen.blit(self.background,[0,0])
+        self.everybody.draw(screen)
+        self.effects.draw(screen)
+        #pygame.display.flip()
+        pygame.display.update(gameArea)
 if __name__=="__main__":
     pygame.init()
+    gameArea = pygame.Rect([0,0],size)
     if len(sys.argv) > 1:
         useGlue = (sys.argv[1] == 'True')
     else:
         useGlue = False
     black = 0,0,0
-    screen = pygame.display.set_mode(size)#,pygame.FULLSCREEN)
-    background = pygame.image.load("floor.jpg")
-    background = pygame.transform.scale(background,size)
+    screen = pygame.display.set_mode([size[0],int(size[1]*(4/3.0))])#,pygame.FULLSCREEN)
     count = 0
     if len(sys.argv) > 2:
         p1Type = int(sys.argv[2])
@@ -203,5 +201,6 @@ if __name__=="__main__":
     else:
         world = World(p1Type,p2Type)
         world.start()
-        while True:
+        while True or count < 300:
             world.step()
+            count += 1

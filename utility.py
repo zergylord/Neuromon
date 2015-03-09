@@ -1,6 +1,6 @@
 import pygame
 def LoadImage(filename,size = None):
-    img = pygame.image.load(filename)
+    img = pygame.image.load(filename).convert()
     if not size == None:
         img = pygame.transform.scale(img,size)
     backColor = img.get_at((0,0))

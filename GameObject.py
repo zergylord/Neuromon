@@ -1,5 +1,6 @@
 import pygame
 import numpy as np
+from utility import *
 '''Mixins'''
 class Living(object):
     ''' remember to call setup() method! Not in init due to or'''
@@ -25,8 +26,7 @@ class Dying(object):
             Also needs a timer and a kill
         '''
         boom = pygame.sprite.Sprite()
-        boom.image = pygame.image.load('explosion.png')
-        boom.image = pygame.transform.scale(boom.image,[75,75])
+        boom.image,_ = LoadImage('explosion.png',[75,75])
         boom.rect = self.rect.copy()
         boom.killTime = pygame.time.get_ticks() + 1000 #1 second duration
         world.effects.add(boom)
@@ -58,7 +58,7 @@ class Mon(GameObject,Living,Dying):
         self.heading = [1,0] #which cardinal direction you face
         self.velo = [0,0]
     def setupImage(self,filename):
-        self.image = pygame.image.load(filename)
+        self.image = pygame.image.load(filename).convert()
         self.image = pygame.transform.scale(self.image,[75,75])
         self.image.fill(self.tint,None,pygame.BLEND_ADD)
         backColor = self.image.get_at((0,0))
