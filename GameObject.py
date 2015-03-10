@@ -103,15 +103,14 @@ class VarMon(Mon):
     def __init__(self,moveList,imageFileName,iType=0,bot=None):
         super(VarMon,self).__init__(iType)
         self.setupImage(imageFileName)
-        #self.attack = attack(self)
         self.move = 6*[None]
         self.chargeup = []
         self.cooldown = []
         for m in moveList:
             if self.move[m.slot] is not None:
                 continue
-            self.move[m.slot] = m(self)
-        #self.move = move(self)
+            m.bind(self)
+            self.move[m.slot] = m
         self.bot = bot
     def getMoveProp(self,propName):
         ret = []

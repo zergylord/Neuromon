@@ -25,15 +25,16 @@ class World(Environment):
         self.everybody = pygame.sprite.Group()
         #setup players
 
-        p1 = VarMon([SharpWalk,Beam],'eye2.jpg',p1Type)
+        p1 = VarMon([SharpWalk(),Beam(),Shark(1,8)],'eye2.jpg',p1Type)
         p1.rect.centerx = 500
         p1.rect.centery = 500
+        p1.health = 1
         self.everybody.add(p1)
         self.players.add(p1)
         if p1Type == 2:
             self.agent = p1
-        
-        p2 = VarMon([Dig,Beam],'eye2.jpg',p2Type,BeamDig)
+         
+        p2 = VarMon([Dig(),Beam(),Shark(1,10,2)],'eye2.jpg',p2Type,BeamDig)
         p2.rect.centerx = 500
         self.everybody.add(p2)
         self.players.add(p2)
@@ -65,7 +66,7 @@ class World(Environment):
         single step of logic and rendering, currently called 60 times per second
         '''
         self.clock.tick(fps)
-        print self.clock.get_fps()
+        #print self.clock.get_fps()
         for p in self.players:
             p.step(self)
             if (p.rect.left < 0 and p.velo[0] < 0) or (p.rect.right > width and p.velo[0]>0):
