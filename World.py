@@ -7,6 +7,7 @@ from Slogun import *
 from Slobeam import *
 from GameObject import *
 from pygame import key as key
+import pygame.freetype
 from globals import *
 
 from rlglue.environment.Environment import Environment
@@ -18,17 +19,18 @@ class World(Environment):
     def env_init(self):
             return "VERSION RL-Glue-3.0"
     def __init__(self,p1Type,p2Type):
+        self.font = pygame.freetype.SysFont('',18)
         self.clock = pygame.time.Clock()
         self.killMe = set()
+        self.spawnMe = set()
         self.players = set()
         self.bullets = pygame.sprite.Group()
         self.everybody = pygame.sprite.Group()
         #setup players
 
-        p1 = VarMon([SharpWalk(),Beam(),Shark(1,8)],'eye2.jpg',p1Type)
+        p1 = VarMon([SharpWalk(),BounceShot(),Shark(1,8)],'eye2.jpg',p1Type)
         p1.rect.centerx = 500
         p1.rect.centery = 500
-        p1.health = 1
         self.everybody.add(p1)
         self.players.add(p1)
         if p1Type == 2:
@@ -66,6 +68,7 @@ class World(Environment):
         single step of logic and rendering, currently called 60 times per second
         '''
         self.clock.tick(fps)
+        self.fps = self.clock.get_fps()
         #print self.clock.get_fps()
         for p in self.players:
             p.step(self)
@@ -149,6 +152,8 @@ class World(Environment):
                #print p.health
             if p.health < 0:
                 self.killMe.add(p)
+            if not p.alive():
+                self.spawnMe.add(p)
     def resolveEffects(self):
         'handle spell effects, and other time dependent game state'
         curTime = pygame.time.get_ticks()
@@ -159,10 +164,27 @@ class World(Environment):
     def resolveDeath(self):
         'handle the removal of sprites and other objects from the game world'
         for k in self.killMe:
-            if k in self.players:
-                self.players.remove(k)
+            #if k in self.players:
+            #    self.players.remove(k)
             k.kill()
+        for p in self.spawnMe:
+            print 'respawn!'
+            self.players.remove(p)
+            if p.iType == 1:
+                'bot spawn!'
+                bot = BeamDig
+            else:
+                'human spawn!'
+                bot = None
+            p = VarMon([Dig(),Beam(),Shark(1,10,2)],'eye2.jpg',p.iType,bot)
+            p.rect.centerx = 500
+            p.start(self)
+            self.everybody.add(p)
+            self.players.add(p)
+            for play in self.players:
+                play.playerChange(self)
         self.killMe.clear()
+        self.spawnMe.clear()
     def render(self):
         'was done in main'
         for event in pygame.event.get():
@@ -177,10 +199,12 @@ class World(Environment):
         screen.blit(self.background,[0,0])
         self.everybody.draw(screen)
         self.effects.draw(screen)
-        #pygame.display.flip()
+        fpsDisp,_ = self.font.render(str(self.fps),(255,255,255))
+        screen.blit(fpsDisp,[0,0])
         pygame.display.update(gameArea)
 if __name__=="__main__":
     pygame.init()
+    pygame.freetype.init()
     gameArea = pygame.Rect([0,0],size)
     if len(sys.argv) > 1:
         useGlue = (sys.argv[1] == 'True')

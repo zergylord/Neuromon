@@ -1,5 +1,7 @@
 import pygame
+import pygame.freetype
 import numpy as np
+from globals import *
 from utility import *
 '''Mixins'''
 class Living(object):
@@ -51,6 +53,8 @@ class Mon(GameObject,Living,Dying):
     def __init__(self,iType):
         super(Mon,self).__init__()
         self.passThrough = False
+        self.font = pygame.freetype.SysFont('',18) 
+        self.textDur = 0
         self.damageToTake = 0
         self.tint = [50,20,iType*127,50]
         self.health = 10
@@ -71,10 +75,16 @@ class Mon(GameObject,Living,Dying):
             handles changes in state and there effects
             e.g. health change leads to new tint
         '''
-        if self.damageToTake != 0:
+        if self.damageToTake > 0:
             self.health = np.min([10,self.health-self.damageToTake])
-            self.damageToTake = 0
             self.updateHealthBar()
+            if self.damageToTake > 1:
+                self.textSurf,_ = self.font.render(str(self.damageToTake),[255,255,255])
+                self.textDur = 1*fps
+            if self.textDur > 0:
+                self.image.blit(self.textSurf,[0,0])
+                self.textDur -= 1
+            self.damageToTake = 0
             ''' tint style damage viz'''
             #self.image.fill(self.tint,None,pygame.BLEND_SUB)
             #self.tint[0] = int(np.max([0,np.min([(1.0-self.health/10.0)*255,255])]))
@@ -99,6 +109,10 @@ class Mon(GameObject,Living,Dying):
             if m is None:
                 continue
             m.kill()
+        super(Mon,self).kill()
+    def playerChange(self,world):
+        if self.iType == 1:
+            self.bot.pickFoe(self,world)
 class VarMon(Mon):
     def __init__(self,moveList,imageFileName,iType=0,bot=None):
         super(VarMon,self).__init__(iType)
