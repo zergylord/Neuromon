@@ -10,7 +10,7 @@ class Living(object):
         super(Living,self).__init__()
     def setupHealthBar(self):
         '''must be called after sprite has been placed'''
-        self.healthBar = self.image.subsurface(pygame.Rect(self.rect.top,self.rect.left,self.rect.width,10))
+        self.healthBar = self.frame.subsurface(pygame.Rect(self.rect.top,self.rect.left,self.rect.width,10))
         self.healthBar.fill([1,255,1])
     def updateHealthBar(self):
         ''' healthbar damage viz'''
@@ -61,21 +61,41 @@ class Mon(GameObject,Living,Dying):
         self.iType = iType
         self.heading = [1,0] #which cardinal direction you face
         self.velo = [0,0]
+        self.rotImages = 4*[None]
+        self.frame = pygame.surface.Surface([250,250])
+        self.frame.set_colorkey(self.frame.get_at((0,0)))
     def setupImage(self,filename):
         self.image = pygame.image.load(filename).convert()
-        self.image = pygame.transform.scale(self.image,[75,75])
+        self.image = pygame.transform.scale(self.image,[125,75])
         self.image.fill(self.tint,None,pygame.BLEND_ADD)
         backColor = self.image.get_at((0,0))
         self.image.set_colorkey(backColor)
         self.rect = self.image.get_rect()
         self.radius = self.rect.height/2
         self.setupHealthBar()
+        self.rotImages[0] = self.image
+        self.rotImages[1] = pygame.transform.rotate(self.image,2*90)
+        self.rotImages[2] = pygame.transform.rotate(self.image,3*90)
+        self.rotImages[3] = pygame.transform.rotate(self.image,90)
+    def setHeading(self,head):
+        self.heading = head
+        pos = self.rect.center
+        if head[0] == 1:
+            self.image = self.rotImages[0]
+        elif head[0] == -1:
+            self.image = self.rotImages[1]
+        elif head[1] == 1:
+            self.image = self.rotImages[2]
+        elif head[1] == -1:
+            self.image = self.rotImages[3]
+        self.rect = self.image.get_rect()
+        self.rect.center = pos
     def update(self,world):
         '''
             handles changes in state and there effects
             e.g. health change leads to new tint
         '''
-        if self.damageToTake > 0:
+        if self.damageToTake != 0:
             self.health = np.min([10,self.health-self.damageToTake])
             self.updateHealthBar()
             if self.damageToTake > 1:

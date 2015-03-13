@@ -6,6 +6,7 @@ from Panoptir import *
 from Slogun import *
 from Slobeam import *
 from GameObject import *
+from Trainer import *
 from pygame import key as key
 import pygame.freetype
 from globals import *
@@ -28,18 +29,23 @@ class World(Environment):
         self.everybody = pygame.sprite.Group()
         #setup players
 
-        p1 = VarMon([SharpWalk(),BounceShot(),Shark(1,8)],'eye2.jpg',p1Type)
-        p1.rect.centerx = 500
+        p1 = VarMon([SharpWalk(),BounceShot(),Shark(1,30,2)],'CreatureSprite.png',p1Type)
+        p1.rect.centerx = 1
         p1.rect.centery = 500
         self.everybody.add(p1)
         self.players.add(p1)
+        self.trainer1 = Trainer() 
+        self.trainer1.mon.append(p1)
         if p1Type == 2:
             self.agent = p1
          
-        p2 = VarMon([Dig(),Beam(),Shark(1,10,2)],'eye2.jpg',p2Type,BeamDig)
-        p2.rect.centerx = 500
+        p2 = VarMon([Dig(),Beam(),Shark(1,30,2)],'CreatureSprite.png',p2Type,BeamDig)
+        p2.rect.centerx = size[0]
+        p2.rect.centery = 500
         self.everybody.add(p2)
         self.players.add(p2)
+        self.trainer2 = Trainer() 
+        self.trainer2.mon.append(p2)
         if p2Type == 2:
             self.agent = p2
         
@@ -49,12 +55,19 @@ class World(Environment):
         self.background = pygame.transform.scale(self.background,size)
         self.portraitBackground = pygame.image.load('border.jpg').convert()
         self.portraitBackground = pygame.transform.scale(self.portraitBackground,[size[0],int(size[1]/3.0)]) 
-        man = pygame.image.load('MM6Man.bmp').convert()
-        man = pygame.transform.scale(man,[int(size[0]*(1/8.0)),int(size[1]/4.0)])
+        self.man = pygame.image.load('CreatureVert.jpg').convert()
+        self.man = pygame.transform.scale(self.man,[int(size[0]*(1/8.0)),int(size[1]/4.0)])
         screen.blit(self.background,[0,0])
+        self.updateGUI(0,0)
+    def updateGUI(self,score1,score2):
         screen.blit(self.portraitBackground,[0,size[1]])
-        screen.blit(man,[0+int(man.get_width()/2.55),size[1]+int(man.get_height()/7.5)])
+        screen.blit(self.man,[0+int(self.man.get_width()/2.55),size[1]+int(self.man.get_height()/7.5)])
+        scoreDisp1,_ = self.font.render(str(score1),(255,255,255))
+        scoreDisp2,_ = self.font.render(str(score2),(255,255,255))
+        screen.blit(scoreDisp1,[0,size[1]])
+        screen.blit(scoreDisp2,[size[0]-100,size[1]])
         pygame.display.update()#the only time portrait area is updated
+
     def start(self):
         for p in self.players:
             p.start(self)
@@ -169,15 +182,26 @@ class World(Environment):
             k.kill()
         for p in self.spawnMe:
             print 'respawn!'
+            if p in self.trainer1.mon:
+                self.trainer2.score += 100
+            else:
+                self.trainer1.score += 100
+            self.updateGUI(self.trainer1.score,self.trainer2.score)
             self.players.remove(p)
             if p.iType == 1:
                 'bot spawn!'
                 bot = BeamDig
+                p = VarMon([Dig(),Beam(),Shark(1,30,2)],'CreatureSprite.png',p.iType,bot)
             else:
                 'human spawn!'
                 bot = None
-            p = VarMon([Dig(),Beam(),Shark(1,10,2)],'eye2.jpg',p.iType,bot)
-            p.rect.centerx = 500
+                p = VarMon([SharpWalk(),Beam(),Shark(1,30,2)],'CreatureSprite.png',p.iType,bot)
+            p.rect.centery = np.random.randint(1,size[1])
+            if p.iType == 1:
+                p.rect.centerx = np.random.randint(1,size[0]/2.0)
+            else:
+                p.rect.centerx = np.random.randint(size[0]/2.0,size[0])
+
             p.start(self)
             self.everybody.add(p)
             self.players.add(p)
@@ -197,6 +221,8 @@ class World(Environment):
             plt.imshow(pixels)
             plt.show()
         screen.blit(self.background,[0,0])
+        for p in self.players:
+            screen.blit(p.frame,p.rect.topleft)
         self.everybody.draw(screen)
         self.effects.draw(screen)
         fpsDisp,_ = self.font.render(str(self.fps),(255,255,255))
