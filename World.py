@@ -34,8 +34,11 @@ class World(Environment):
         p1.rect.centery = 500
         self.everybody.add(p1)
         self.players.add(p1)
-        self.trainer1 = Trainer() 
-        self.trainer1.mon.append(p1)
+        self.trainers = (Trainer(),Trainer())
+        self.trainers[0].mon.append(p1)
+        for i in range(0,3):
+            backupMon = VarMon([SharpWalk(),BounceShot(),Shark(1,30,2)],'CreatureSprite.png',p1Type)
+            self.trainers[0].mon.append(backupMon)
         if p1Type == 2:
             self.agent = p1
          
@@ -44,8 +47,10 @@ class World(Environment):
         p2.rect.centery = 500
         self.everybody.add(p2)
         self.players.add(p2)
-        self.trainer2 = Trainer() 
-        self.trainer2.mon.append(p2)
+        self.trainers[1].mon.append(p2)
+        for i in range(0,3):
+            backupMon = VarMon([Dig(),Beam(),Shark(1,30,2)],'CreatureSprite.png',p2Type,BeamDig)
+            self.trainers[1].mon.append(backupMon)
         if p2Type == 2:
             self.agent = p2
         
@@ -182,12 +187,24 @@ class World(Environment):
             k.kill()
         for p in self.spawnMe:
             print 'respawn!'
-            if p in self.trainer1.mon:
-                self.trainer2.score += 100
-            else:
-                self.trainer1.score += 100
-            self.updateGUI(self.trainer1.score,self.trainer2.score)
+            for t in self.trainers:
+                if p in t.mon:
+                    print 'player' + str(1-t.num) + ' points!'
+                    self.trainers[1-t.num].score += 100
+                    t.mon.remove(p)
+                    if len(t.mon) > 0:
+                        newMon = t.mon[0]
+                        newMon.rect.centery = np.random.randint(1,size[1])
+                        newMon.rect.centerx = np.random.randint(1,size[0]/2.0)
+                        newMon.start(self)
+                        self.everybody.add(newMon)
+                        self.players.add(newMon)
+                    else:
+                        print 'player' + str(t.num) + ' is out of neuromon!'
+                        pygame.event.post(pygame.event.Event(pygame.QUIT))
+            self.updateGUI(self.trainers[0].score,self.trainers[1].score)
             self.players.remove(p)
+            '''
             if p.iType == 1:
                 'bot spawn!'
                 bot = BeamDig
@@ -205,6 +222,7 @@ class World(Environment):
             p.start(self)
             self.everybody.add(p)
             self.players.add(p)
+            '''
             for play in self.players:
                 play.playerChange(self)
         self.killMe.clear()
