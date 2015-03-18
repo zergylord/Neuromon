@@ -10,6 +10,7 @@ from Trainer import *
 from pygame import key as key
 import pygame.freetype
 from globals import *
+from Breeding import *
 
 from rlglue.environment.Environment import Environment
 from rlglue.environment import EnvironmentLoader
@@ -81,6 +82,21 @@ class World(Environment):
         returnObs=Observation()
         returnObs.intArray=[1]
         return returnObs
+    def getInput(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    pixels = np.array(pygame.surfarray.array2d(screen))
+                    plt.imshow(pixels)
+                    plt.show()
+                if event.key == pygame.K_b:
+                    Breeding(self.trainers[0].mon)
+        curPressed = key.get_pressed()
+        if curPressed[pygame.K_ESCAPE]:
+            pygame.event.post(pygame.event.Event(pygame.QUIT))
+
+
     def step(self):
         '''
         single step of logic and rendering, currently called 60 times per second
@@ -88,6 +104,7 @@ class World(Environment):
         self.clock.tick(fps)
         self.fps = self.clock.get_fps()
         #print self.clock.get_fps()
+        self.getInput()
         for p in self.players:
             p.step(self)
             if (p.rect.left < 0 and p.velo[0] < 0) or (p.rect.right > width and p.velo[0]>0):
@@ -202,6 +219,7 @@ class World(Environment):
                     else:
                         print 'player' + str(t.num) + ' is out of neuromon!'
                         pygame.event.post(pygame.event.Event(pygame.QUIT))
+                        return
             self.updateGUI(self.trainers[0].score,self.trainers[1].score)
             self.players.remove(p)
             '''
@@ -229,15 +247,6 @@ class World(Environment):
         self.spawnMe.clear()
     def render(self):
         'was done in main'
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT: sys.exit()
-        curPressed = key.get_pressed()
-        if curPressed[pygame.K_ESCAPE]:
-            pygame.event.post(pygame.event.Event(pygame.QUIT))
-        if curPressed[pygame.K_p]:
-            pixels = np.array(pygame.surfarray.array2d(screen))
-            plt.imshow(pixels)
-            plt.show()
         screen.blit(self.background,[0,0])
         for p in self.players:
             screen.blit(p.frame,p.rect.topleft)
