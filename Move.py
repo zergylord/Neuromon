@@ -5,12 +5,24 @@ from operator import *
 import pygame
 import pygame.key as key
 import numpy as np
+import inspect
 class Move(object):
+    @classmethod
+    def _setParams(cls,self):
+        for p in self.paramNames:
+            if getattr(self,p) == None:
+                setattr(self,p,cls._paramGen(p))
+    @staticmethod
+    def _paramGen(paramName):
+        ''' should specify how to generate random values for each parameter'''
+        pass
     def __init__(self):
         ''' setup anything not tied to a specfic Mon
             e.g. hyperparameters
         '''
-        pass
+        frame,_,_,_,_,_ = inspect.getouterframes(inspect.currentframe())[1]
+        args, _, _, _ = inspect.getargvalues(frame)
+        self.paramNames = args[1:]
     def bind(self,mon):
         ''' call to bind to an inited Mon'''
         pass
@@ -29,11 +41,20 @@ class Move(object):
     def kill(self):
         pass
 class SharpWalk(Move):
+    '''
+        speed: pixels per second movement
+    '''
     numActions = 2 
     slot = LEGS
-    def __init__(self):
+    @staticmethod
+    def _paramGen(paramName):
+        if paramName == 'speed':
+            return np.random.normal(200,20)
+    def __init__(self,speed = None):
         super(SharpWalk,self).__init__()
-        self.speed = 200.0/fps #pixels per second
+        self.speed = speed
+        SharpWalk._setParams(self)#parameter setting boilerplate needed for all Moves
+        self.speed /= fps #pixels per second
     def bind(self,mon):
         pass
     def handleMove(self,mon,world):
@@ -73,30 +94,61 @@ class Shark(Move):
         you take damage while staying still
     '''
     slot = SKIN
-    def __init__(self,dps = 1.0,heal = 10.0,smallPen = 1):
+    @staticmethod
+    def _paramGen(paramName):
+        if paramName == 'dps':
+            return np.random.normal(1,.1)
+        if paramName == 'heal':
+            return np.random.normal(30,3)
+        if paramName == 'smallPen':
+            return np.random.normal(1,.1)
+    def __init__(self,dps = None,heal = None,smallPen = None):
         '''
         dps: damage always taken
         heal: healing per 'unit' of movement
         smallPen: penalty to small movements e.g. 4 basically requires moving maxDist
         '''
         super(Shark,self).__init__()
-        self.dps = float(dps)
-        self.baseHeal = float(heal)
+        self.dps = dps
+        self.heal = heal
         self.smallPen = smallPen
-        self.maxDis = float(pow(np.linalg.norm(size),smallPen))
+        Shark._setParams(self)#parameter setting boilerplate needed for all Moves
+        self.maxDis = float(pow(np.linalg.norm(size),self.smallPen))
     def bind(self,mon):
         self.prevPos = mon.rect.center
     def handleMove(self,mon,world):
         curPos = mon.rect.center
         moveDis = pow(np.linalg.norm(np.subtract(curPos,self.prevPos)),self.smallPen)/self.maxDis #% of dis squared
-        mon.damageToTake += (moveDis*-self.baseHeal + self.dps/fps)
+        mon.damageToTake += (moveDis*-self.heal + self.dps/fps)
         self.prevPos = curPos
 class Dig(Move):
-    baseMoveDuration = 100 
-    distMoveDuration = 5000 #proportional to distance traveled
+    '''
+    baseChargeup: time from click until move in ms
+    distChargeup: additional chargeup time in ms due to distance-to-travel
+    baseCooldown: time required between finishing one move and starting another
+    cancelCooldown: cooldown when hole destoryed before movement
+
+    '''
     slot = ARMS
-    def __init__(self):
+    @staticmethod
+    def _paramGen(paramName):
+        if paramName == 'baseChargeup':
+            return np.random.normal(100,10)
+        if paramName == 'distChargeup':
+            return np.random.normal(5000,500)
+        if paramName == 'baseCooldown':
+            return np.random.normal(100,10)
+        if paramName == 'cancelCooldown':
+            return np.random.normal(1000,100)
+    def __init__(self,baseChargeup = None,distChargeup = None,baseCooldown = None,cancelCooldown = None):
         super(Dig,self).__init__()
+        self.baseChargeup = baseChargeup
+        self.distChargeup = distChargeup
+        self.baseCooldown = baseCooldown
+        self.cancelCooldown = cancelCooldown
+        Dig._setParams(self)
+
+
         self.hole = FragileObject()
         self.hole.image,self.hole.rect = LoadImage('hole2.png',[100,100]) 
         self.hole.radius = self.hole.rect.height/2
@@ -111,10 +163,10 @@ class Dig(Move):
         if not self.hole.alive():
             if self.chargeup > 0: #hole died before movement, cancel movement
                 self.chargeup = -1
-                self.cooldown = pygame.time.get_ticks() + 1000 #can't move again for a second
+                self.cooldown = pygame.time.get_ticks() + self.cancelCooldown #can't move again for a second
             elif move and pygame.time.get_ticks() > self.cooldown: #start movement
                 moveDis = np.linalg.norm(np.subtract(mousePos,mon.rect.center))
-                self.chargeup = pygame.time.get_ticks() + self.baseMoveDuration + self.distMoveDuration*(moveDis/width)
+                self.chargeup = pygame.time.get_ticks() + self.baseChargeup + self.distChargeup*(moveDis/width)
                 self.hole.rect.centerx,self.hole.rect.centery = mousePos
                 world.everybody.add(self.hole)
         if self.chargeup > 0 and pygame.time.get_ticks() > self.chargeup: #complete movement
@@ -122,7 +174,7 @@ class Dig(Move):
             mon.rect.centery  = self.hole.rect.centery
             self.hole.kill()
             self.chargeup = -1
-            self.cooldown = pygame.time.get_ticks() + 100 #small delay between moves
+            self.cooldown = pygame.time.get_ticks() + self.baseCooldown #small delay between moves
     def getHumanInput(self):
         '''
             returns:

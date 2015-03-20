@@ -30,18 +30,20 @@ class World(Environment):
         self.everybody = pygame.sprite.Group()
         #setup players
 
-        p1 = VarMon([SharpWalk(),BounceShot(),Shark(1,30,2)],'CreatureSprite.png',p1Type)
+        p1 = VarMon([SharpWalk(),BounceShot(),Shark()],'CreatureSprite.png',p1Type)
         p1.rect.centerx = 1
         p1.rect.centery = 500
         self.everybody.add(p1)
         self.players.add(p1)
-        self.trainers = (Trainer(),Trainer())
+        self.trainers = (Trainer(True),Trainer(False))
+        Trainer.world = self
         self.trainers[0].mon.append(p1)
         for i in range(0,3):
-            backupMon = VarMon([SharpWalk(),BounceShot(),Shark(1,30,2)],'CreatureSprite.png',p1Type)
+            backupMon = VarMon([SharpWalk(),BounceShot(),Shark()],'CreatureSprite.png',p1Type)
             self.trainers[0].mon.append(backupMon)
         if p1Type == 2:
             self.agent = p1
+        self.trainers[0].setCurMon(0)
          
         p2 = VarMon([Dig(),Beam(),Shark(1,30,2)],'CreatureSprite.png',p2Type,BeamDig)
         p2.rect.centerx = size[0]
@@ -49,6 +51,7 @@ class World(Environment):
         self.everybody.add(p2)
         self.players.add(p2)
         self.trainers[1].mon.append(p2)
+        self.trainers[1].curMon = 0
         for i in range(0,3):
             backupMon = VarMon([Dig(),Beam(),Shark(1,30,2)],'CreatureSprite.png',p2Type,BeamDig)
             self.trainers[1].mon.append(backupMon)
@@ -105,6 +108,8 @@ class World(Environment):
         self.fps = self.clock.get_fps()
         #print self.clock.get_fps()
         self.getInput()
+        for t in self.trainers:
+            t.step()
         for p in self.players:
             p.step(self)
             if (p.rect.left < 0 and p.velo[0] < 0) or (p.rect.right > width and p.velo[0]>0):
@@ -208,39 +213,8 @@ class World(Environment):
                 if p in t.mon:
                     print 'player' + str(1-t.num) + ' points!'
                     self.trainers[1-t.num].score += 100
-                    t.mon.remove(p)
-                    if len(t.mon) > 0:
-                        newMon = t.mon[0]
-                        newMon.rect.centery = np.random.randint(1,size[1])
-                        newMon.rect.centerx = np.random.randint(1,size[0]/2.0)
-                        newMon.start(self)
-                        self.everybody.add(newMon)
-                        self.players.add(newMon)
-                    else:
-                        print 'player' + str(t.num) + ' is out of neuromon!'
-                        pygame.event.post(pygame.event.Event(pygame.QUIT))
-                        return
+                    t.loseCurMon()
             self.updateGUI(self.trainers[0].score,self.trainers[1].score)
-            self.players.remove(p)
-            '''
-            if p.iType == 1:
-                'bot spawn!'
-                bot = BeamDig
-                p = VarMon([Dig(),Beam(),Shark(1,30,2)],'CreatureSprite.png',p.iType,bot)
-            else:
-                'human spawn!'
-                bot = None
-                p = VarMon([SharpWalk(),Beam(),Shark(1,30,2)],'CreatureSprite.png',p.iType,bot)
-            p.rect.centery = np.random.randint(1,size[1])
-            if p.iType == 1:
-                p.rect.centerx = np.random.randint(1,size[0]/2.0)
-            else:
-                p.rect.centerx = np.random.randint(size[0]/2.0,size[0])
-
-            p.start(self)
-            self.everybody.add(p)
-            self.players.add(p)
-            '''
             for play in self.players:
                 play.playerChange(self)
         self.killMe.clear()
