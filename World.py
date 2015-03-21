@@ -45,7 +45,7 @@ class World(Environment):
             self.agent = p1
         self.trainers[0].setCurMon(0)
          
-        p2 = VarMon([Dig(),Beam(),Shark(1,30,2)],'CreatureSprite.png',p2Type,BeamDig)
+        p2 = VarMon([Dig(),Beam(),Shark()],'CreatureSprite.png',p2Type,BeamDig)
         p2.rect.centerx = size[0]
         p2.rect.centery = 500
         self.everybody.add(p2)
@@ -53,7 +53,7 @@ class World(Environment):
         self.trainers[1].mon.append(p2)
         self.trainers[1].curMon = 0
         for i in range(0,3):
-            backupMon = VarMon([Dig(),Beam(),Shark(1,30,2)],'CreatureSprite.png',p2Type,BeamDig)
+            backupMon = VarMon([Dig(),Beam(),Shark()],'CreatureSprite.png',p2Type,BeamDig)
             self.trainers[1].mon.append(backupMon)
         if p2Type == 2:
             self.agent = p2
@@ -94,6 +94,8 @@ class World(Environment):
                     plt.imshow(pixels)
                     plt.show()
                 if event.key == pygame.K_b:
+                    Breeding(self.trainers[0].mon)
+                if event.key == pygame.K_4:
                     Breeding(self.trainers[0].mon)
         curPressed = key.get_pressed()
         if curPressed[pygame.K_ESCAPE]:

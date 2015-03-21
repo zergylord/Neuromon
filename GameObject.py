@@ -150,13 +150,13 @@ class VarMon(Mon):
         ret = []
         for m in self.move:
             if hasattr(m,propName):
-                ret.append(m.cooldown)
+                ret.append(getattr(m,propName))
         return ret
     def setMoveProp(self,propName,vals):
         count = 0
         for m in self.move:
             if hasattr(m,propName):
-                m.cooldown = vals[count]
+                setattr(m,propName,vals[count])
                 count += 1
 
     def start(self,world):

@@ -188,18 +188,33 @@ class Dig(Move):
         self.hole.kill()
 class BounceShot(Move):
     slot = ARMS
-    def __init__(self):
+    @staticmethod
+    def _paramGen(paramName):
+        if paramName == 'baseCooldown':
+            return np.random.normal(1000,100)
+        if paramName == 'size':
+            return int(max(10,np.random.normal(100,50)))
+        if paramName == 'damage':
+            return max(.1,np.random.normal(1,.5))
+        if paramName == 'speed':
+            return max(0,np.random.normal(10,5))
+    def __init__(self,baseCooldown = None, size = None,damage = None, speed = None):
         super(BounceShot,self).__init__()
-        self.chargeup = -1
+        self.baseCooldown = baseCooldown
+        self.size = size
+        self.damage = damage
+        self.speed = speed
+        BounceShot._setParams(self)
+        self.cooldown = -1
     def bind(self,mon):
         pass
     def canShoot(self):
-        return pygame.time.get_ticks() > self.chargeup
+        return pygame.time.get_ticks() > self.cooldown
     def handleMove(self,mon,world):
         shoot = self.getInput(mon)
         if shoot and self.canShoot():
-            bullet = Bullet(map(mul,mon.heading,[10,10]),1)
-            bSize = [100,100]
+            bullet = Bullet(map(mul,mon.heading,[self.speed,self.speed]),self.damage)
+            bSize = [self.size,self.size]
             bullet.image,bullet.rect = LoadImage('energy-ball.jpg',bSize)
             halfHead = map(mul,mon.heading,[.5,.5])
             offset = map(mul,halfHead,mon.rect.size)
@@ -207,7 +222,7 @@ class BounceShot(Move):
             bullet.rect.center = map(add,mon.rect.center,offset) 
             world.bullets.add(bullet)
             world.everybody.add(bullet)
-            self.chargeup = pygame.time.get_ticks() + 1000
+            self.cooldown = pygame.time.get_ticks() + self.baseCooldown
     def getHumanInput(self):
         '''
             returns:
@@ -226,8 +241,18 @@ class Beam(Move):
     vertBeamImage = pygame.Surface([50,300])
     vertBeamImage.fill([255,20,70])
     slot = MOUTH
-    def __init__(self):
+    @staticmethod
+    def _paramGen(paramName):
+        if paramName == 'duration':
+            return np.random.normal(1000,500)
+        if paramName == 'damage': #total damage over full duration
+            return max(.1,np.random.normal(5,2))
+    def __init__(self,duration = None,damage = None):
         super(Beam,self).__init__()
+        self.damage = damage
+        self.duration = duration
+        Beam._setParams(self)
+        print self.duration
         self.beam = pygame.sprite.Sprite()
         self.beam.image = self.horBeamImage 
         self.beam.rect = self.beam.image.get_rect()
@@ -251,10 +276,10 @@ class Beam(Move):
                 self.beam.rect = self.beam.image.get_rect()
                 self.beam.rect.centerx  = mon.rect.centerx + pew[0]*self.beam.horOffset
                 self.beam.rect.centery  = mon.rect.centery + pew[1]*self.beam.vertOffset
-                self.beam.damage = 5.0/(fps*self.beamDuration/1000)
+                self.beam.damage = self.damage/(fps*self.duration/1000.0)
                 self.beam.passThrough = True
                 world.everybody.add(self.beam)
-                self.beamCutoffTime = pygame.time.get_ticks() + self.beamDuration
+                self.beamCutoffTime = pygame.time.get_ticks() + self.duration
                 ' pause skill in progress and delay initing new skills'
                 chargeupVals = map(lambda x,y: (x>0)*max(x,y),chargeupVals,len(chargeupVals)*[self.beamCutoffTime])
                 cooldownVals = mon.getMoveProp('cooldown')
