@@ -1,4 +1,5 @@
 import pygame
+import pickle
 import pygame.freetype
 import numpy as np
 from globals import *
@@ -158,7 +159,19 @@ class VarMon(Mon):
             if hasattr(m,propName):
                 setattr(m,propName,vals[count])
                 count += 1
-
+    def save(self):
+        moveParams = []
+        for m in self.move:
+            if not m == None:
+                moveParams.append(m.param)
+        pickle.dump(moveParams, open( "save.p", "wb" ) )
+    def load(self):
+        moveParams = pickle.load( open( "save.p", "rb" ) )
+        ind = 0
+        for m in self.move:
+            if not m == None:
+                m.param = moveParams[ind]
+                ind += 1
     def start(self,world):
         if self.iType == 0:
             pass

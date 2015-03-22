@@ -1,3 +1,6 @@
+'''
+TODO: switch self.move from 6 element list to dict
+'''
 from itertools import count
 import pygame
 from pygame import key as key

@@ -96,7 +96,9 @@ class World(Environment):
                 if event.key == pygame.K_b:
                     Breeding(self.trainers[0].mon)
                 if event.key == pygame.K_4:
-                    Breeding(self.trainers[0].mon)
+                    self.trainers[0].getCurMon().save()
+                if event.key == pygame.K_7:
+                    self.trainers[0].getCurMon().load()
         curPressed = key.get_pressed()
         if curPressed[pygame.K_ESCAPE]:
             pygame.event.post(pygame.event.Event(pygame.QUIT))
