@@ -137,6 +137,7 @@ class Mon(GameObject,Living,Dying):
 class VarMon(Mon):
     def __init__(self,moveList,imageFileName,iType=0,bot=None):
         super(VarMon,self).__init__(iType)
+        self.imageFileName = imageFileName
         self.setupImage(imageFileName)
         self.move = 6*[None]
         self.chargeup = []
