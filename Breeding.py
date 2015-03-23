@@ -67,4 +67,5 @@ def Breeding(monList):
     background = pygame.transform.scale(background,size)
     while not quit:
         monList,quit = step()
+    return monList
 

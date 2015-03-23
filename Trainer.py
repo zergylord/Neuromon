@@ -32,6 +32,24 @@ class Trainer(object):
         self.world.players.add(self.mon[ind])
     def getCurMon(self):
         return self.mon[self.curMon]
+    def getBreedableMon(self):
+        '''
+        gets all of the mons in Mon that are fit for breeding.
+        currently just all mon that aren't the current one, but
+        later might include being of age.
+        '''
+        breedable = self.mon[:] #copy list
+        breedable.remove(self.getCurMon())
+        return breedable
+    def setBreedableMon(self,bMon):
+        '''
+        edits the Mon list s.t. bMon are the only breedable Mons in it
+        '''
+        nonBreedable = self.getCurMon()
+        self.mon = bMon
+        self.mon.insert(self.curMon,nonBreedable)
+
+
     def loseCurMon(self):
         self.getCurMon().kill()
         self.world.players.remove(self.getCurMon())
@@ -49,6 +67,7 @@ class Trainer(object):
         #print otherMon in self.world.everybody
         otherTrainer.loseCurMon()
         ' add mon to this trainer'
+        otherMon.iType = 0
         self.mon.append(otherMon)
         print self.world.everybody
         

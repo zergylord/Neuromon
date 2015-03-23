@@ -38,7 +38,7 @@ class World(Environment):
         self.trainers = (Trainer(True),Trainer(False))
         Trainer.world = self
         self.trainers[0].mon.append(p1)
-        for i in range(0,3):
+        for i in range(3):
             backupMon = VarMon([SharpWalk(),BounceShot(),Shark()],'CreatureSprite.png',p1Type)
             self.trainers[0].mon.append(backupMon)
         if p1Type == 2:
@@ -94,7 +94,9 @@ class World(Environment):
                     plt.imshow(pixels)
                     plt.show()
                 if event.key == pygame.K_b:
-                    Breeding(self.trainers[0].mon)
+                    breedable = Breeding(self.trainers[0].getBreedableMon())
+                    self.trainers[0].setBreedableMon(breedable)
+                    print self.trainers[0].mon
                 if event.key == pygame.K_4:
                     self.trainers[0].getCurMon().save()
                 if event.key == pygame.K_7:
