@@ -55,24 +55,33 @@ def Breeding(monList):
         screen.blit(background,[0,0])
         count = 0
         top = 100
-        vertSpace = 20
+        vertSpace = 10
         barLength = 200
         barHeight = 30
         left = slot*(width/2)+barLength
         totalHeight = 0
         for m in mon.move.viewvalues():
+            moveText,rect = font.render(m.name(),(255,255,255))
+            screen.blit(moveText,[left+5,top+totalHeight+vertSpace])
+            totalHeight += rect.height + vertSpace
             for p in m.param:
-                if m.param[p] < 0:
-                    pVal = -1*m.param[p]
+                pVal = ((m.param[p]-m._pMean[p])/m._pStd[p])*(barLength/3.0) #can display up to 3 std each direction
+                if pVal < 0:
+                    pVal *= -1
                     neg = 1
                 else:
-                    pVal = m.param[p]
                     neg = 0
                 bar = pygame.surface.Surface([pVal, barHeight])
-                screen.blit(bar,[left-pVal*neg,top+totalHeight+vertSpace])
+                bar.fill([254*neg+1,254*(1-neg)+1,1])
+                pHor = left-pVal*neg
+                pVert = top+totalHeight+vertSpace
+                screen.blit(bar,[pHor,pVert])
+                pText,rect = font.render(p,(125,125,125))
+                screen.blit(pText,[pHor+(5+pVal)*(1-neg)-(rect.width+5)*neg,pVert])
                 count += 1
                 totalHeight += barHeight + vertSpace
-
+        vertBar = pygame.surface.Surface([10,totalHeight])
+        screen.blit(vertBar,[left-5,top])
         pygame.display.update(pygame.Rect(left-barLength,top,barLength*2,totalHeight))
     def renderMonList():
         #render GUI

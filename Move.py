@@ -10,15 +10,21 @@ import pygame.key as key
 import numpy as np
 import inspect
 class Move(object):
-    def _paramGen(paramName):
-        ''' should specify how to generate random values for each parameter'''
-        pass
+    @classmethod
+    def _sample(cls,param):
+        return np.random.normal(cls._pMean[param],cls._pStd[param])
+    def _paramGen(self):
+        for p in self.__class__.paramList:
+            self.param[p] = self.__class__._sample(p)
     def __init__(self):
         ''' setup anything not tied to a specfic Mon
             e.g. hyperparameters
         '''
         self.param = dict()
         self._paramGen()
+    @staticmethod
+    def name():
+        return 'Move'
     def bind(self,mon):
         ''' call to bind to an inited Mon'''
         pass
@@ -41,12 +47,15 @@ class SharpWalk(Move):
         speed: pixels per second movement
     '''
     numActions = 2 
-    slot = 'LEGS'
-    def _paramGen(self):
-        self.param['speed'] = np.random.normal(200,20)
+    slot = LEGS
+    paramList = ['speed']
+    _pMean = {'speed':100}
+    _pStd = {'speed':20}
+    @staticmethod
+    def name():
+        return 'Sharp Walk'
     def __init__(self):
         super(SharpWalk,self).__init__()
-        self.param['speed'] /= fps #pixels per second
     def bind(self,mon):
         pass
     def handleMove(self,mon,world):
@@ -71,13 +80,13 @@ class SharpWalk(Move):
         velo = [0,0]
         curPressed = key.get_pressed()
         if curPressed[pygame.K_LEFT]:
-            velo[0] = -self.param['speed']
+            velo[0] = -self.param['speed']/fps 
         if curPressed[pygame.K_RIGHT]:
-            velo[0] = self.param['speed']
+            velo[0] = self.param['speed']/fps 
         if curPressed[pygame.K_UP]:
-            velo[1] = -self.param['speed']
+            velo[1] = -self.param['speed']/fps 
         if curPressed[pygame.K_DOWN]:
-            velo[1] = self.param['speed']
+            velo[1] = self.param['speed']/fps 
         return velo
 class Shark(Move):
     '''
@@ -85,11 +94,13 @@ class Shark(Move):
         Movement grants health
         you take damage while staying still
     '''
-    slot = 'SKIN'
-    def _paramGen(self):
-        self.param['dps'] = np.random.normal(1,.1)
-        self.param['heal'] = np.random.normal(30,3)
-        self.param['smallPen'] = np.random.normal(1,.1)
+    slot = SKIN
+    paramList = ['dps','heal','smallPen']
+    _pMean = {'dps':1,'heal':30,'smallPen':1}
+    _pStd = {'dps':.1,'heal':3,'smallPen':.1}
+    @staticmethod
+    def name():
+        return 'Shark Skin'
     def __init__(self):
         '''
         dps: damage always taken
@@ -97,7 +108,6 @@ class Shark(Move):
         smallPen: penalty to small movements e.g. 4 basically requires moving maxDist
         '''
         super(Shark,self).__init__()
-        Shark._paramGen(self)#parameter setting boilerplate needed for all Moves
         self.maxDis = float(pow(np.linalg.norm(size),self.param['smallPen']))
     def bind(self,mon):
         self.prevPos = mon.rect.center
@@ -114,15 +124,12 @@ class Dig(Move):
     cancelCooldown: cooldown when hole destoryed before movement
 
     '''
-    slot = 'ARMS'
-    def _paramGen(self):
-        self.param['baseChargeup'] = np.random.normal(100,10)
-        self.param['distChargeup'] = np.random.normal(5000,500)
-        self.param['baseCooldown'] = np.random.normal(100,10)
-        self.param['cancelCooldown'] = np.random.normal(1000,100)
+    slot = ARMS
+    paramList = ['baseChargeup','distChargeup','baseCooldown','cancelCooldown']
+    _pMean = {'baseChargeup':100,'distChargeup':5000,'baseCooldown':100,'cancelCooldown':1000}
+    _pStd = {'baseChargeup':10,'distChargeup':500,'baseCooldown':10,'cancelCooldown':100}
     def __init__(self):
         super(Dig,self).__init__()
-        Dig._paramGen(self)
 
 
         self.hole = FragileObject()
@@ -163,15 +170,15 @@ class Dig(Move):
     def kill(self):
         self.hole.kill()
 class BounceShot(Move):
-    slot = 'ARMS'
-    def _paramGen(self):
-        self.param['baseCooldown'] = np.random.normal(1000,100)
-        self.param['size'] = int(max(10,np.random.normal(100,50)))
-        self.param['damage'] = max(.1,np.random.normal(1,.5))
-        self.param['speed'] = max(0,np.random.normal(10,5))
+    slot = ARMS
+    paramList = ['baseCooldown','size','damage','speed']
+    _pMean = {'baseCooldown':1000,'size':100,'damage':1,'speed':10}
+    _pStd = {'baseCooldown':100,'size':50,'damage':.5,'speed':5}
+    @staticmethod
+    def name():
+        return 'Bounce Blast'
     def __init__(self):
         super(BounceShot,self).__init__()
-        self._paramGen()
         self.cooldown = -1
     def bind(self,mon):
         pass
@@ -181,7 +188,8 @@ class BounceShot(Move):
         shoot = self.getInput(mon)
         if shoot and self.canShoot():
             bullet = Bullet(map(mul,mon.heading,[self.param['speed'],self.param['speed']]),self.param['damage'])
-            bSize = [self.param['size'],self.param['size']]
+            pixels = max(10,int(self.param['size']))
+            bSize = [pixels,pixels]
             bullet.image,bullet.rect = LoadImage('energy-ball.jpg',bSize)
             halfHead = map(mul,mon.heading,[.5,.5])
             offset = map(mul,halfHead,mon.rect.size)
@@ -207,13 +215,15 @@ class Beam(Move):
     horBeamImage.fill([255,20,70])
     vertBeamImage = pygame.Surface([50,300])
     vertBeamImage.fill([255,20,70])
-    slot = 'MOUTH'
-    def _paramGen(self):
-        self.param['duration'] = np.random.normal(1000,500)
-        self.param['damage'] = max(.1,np.random.normal(5,2))
+    slot = MOUTH
+    paramList = ['duration','damage']
+    _pMean = {'duration':1000,'damage':5}
+    _pStd = {'duration':500,'damage':2}
+    @staticmethod
+    def name():
+        return 'Beam'
     def __init__(self):
         super(Beam,self).__init__()
-        self._paramGen()
         self.beam = pygame.sprite.Sprite()
         self.beam.image = self.horBeamImage 
         self.beam.rect = self.beam.image.get_rect()
