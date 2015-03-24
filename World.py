@@ -52,7 +52,8 @@ class World(Environment):
         self.players.add(p2)
         self.trainers[1].mon.append(p2)
         self.trainers[1].curMon = 0
-        for i in range(0,3):
+        for i in range(3):
+            print i
             backupMon = VarMon([Dig(),Beam(),Shark()],'CreatureSprite.png',p2Type,BeamDig)
             self.trainers[1].mon.append(backupMon)
         if p2Type == 2:

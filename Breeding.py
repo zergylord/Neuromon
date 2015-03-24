@@ -6,12 +6,7 @@ def Breeding(monList):
     Breeding.pInd = [0,1] # current parents to breed
     Breeding.cInd = 0 #current parent to update
     def step():
-        #render GUI
-        pygame.display.update()
-        screen.blit(background,[0,0])
-        screen.blit(pygame.Surface((100,200)),[0,0])
-        monNameText,_ = font.render(str(monList),(255,255,255))
-        screen.blit(monNameText,[0,0])
+        
         #handle input
         curPressed = key.get_pressed()
         quit = False
@@ -21,6 +16,9 @@ def Breeding(monList):
                 if event.key == pygame.K_b:
                     quit = True
                 elif event.key == pygame.K_RETURN:
+                    if len(monList) < 2:
+                        print 'need at least 2 breedable mon to have a child!'
+                        continue
                     child = conceive()
                     print len(monList)
                     par1 = monList[Breeding.pInd[0]]
@@ -29,6 +27,7 @@ def Breeding(monList):
                     monList.remove(par1)
                     monList.remove(par2)
                     monList.append(child)
+                    renderMonList()
                     print 'you pressed enter'
                 elif event.key == pygame.K_1:
                     changeParent(0)
@@ -38,15 +37,51 @@ def Breeding(monList):
                     changeParent(2)
                 elif event.key == pygame.K_4:
                     changeParent(3)
+                elif event.key == pygame.K_0:
+                    pygame.display.update()
         return monList,quit
 
     def changeParent(val):
-        if Breeding.pInd[1-Breeding.cInd] == val:
+        if Breeding.pInd[1-Breeding.cInd] == val: #can't be both parents!
+            return
+        if val >= len(monList):
             return
         Breeding.pInd[Breeding.cInd] = val 
+        renderStats(Breeding.cInd,val)
         Breeding.cInd = 1 - Breeding.cInd
         print Breeding.pInd
+    def renderStats(slot,ind):
+        mon = monList[ind]
+        screen.blit(background,[0,0])
+        count = 0
+        top = 100
+        vertSpace = 20
+        barLength = 200
+        barHeight = 30
+        left = slot*(width/2)+barLength
+        totalHeight = 0
+        for m in mon.move:
+            if not m == None:
+                for p in m.param:
+                    if m.param[p] < 0:
+                        pVal = -1*m.param[p]
+                        neg = 1
+                    else:
+                        pVal = m.param[p]
+                        neg = 0
+                    bar = pygame.surface.Surface([pVal, barHeight])
+                    screen.blit(bar,[left-pVal*neg,top+totalHeight+vertSpace])
+                    count += 1
+                    totalHeight += barHeight + vertSpace
 
+        pygame.display.update(pygame.Rect(left-barLength,top,barLength*2,totalHeight))
+    def renderMonList():
+        #render GUI
+        screen.blit(background,[0,0])
+        print str(monList)
+        monNameText,rect = font.render(str(monList),(255,255,255))
+        screen.blit(monNameText,[0,0])
+        pygame.display.update(0,0,width,rect.height) #refresh whole hor section of screen, since don't track max hor size
     def conceive():
         ''' -merge the stats and Moves of the parents
             they die, but a new Neuromon is birthed
@@ -66,6 +101,9 @@ def Breeding(monList):
                         newMove.param[p] += .1*(monList[1-winningPar].move[i].param[p] - newMove.param[p])
                 moveList.append(newMove)
         baby = VarMon(moveList,monList[Breeding.pInd[0]].imageFileName)
+        #select default parents
+        Breeding.pInd[0] = 0
+        Breeding.pInd[1] = 1
         return baby
     #main excution f
     quit = False
@@ -74,6 +112,9 @@ def Breeding(monList):
     screen = pygame.display.get_surface()
     background = pygame.image.load("floor.jpg").convert()
     background = pygame.transform.scale(background,size)
+    screen.blit(background,[0,0])
+    pygame.display.update()
+    renderMonList()
     while not quit:
         monList,quit = step()
     return monList
