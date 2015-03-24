@@ -48,16 +48,25 @@ def Breeding(monList):
         print Breeding.pInd
 
     def conceive():
-        ''' merge the stats and Moves of the parents
+        ''' -merge the stats and Moves of the parents
             they die, but a new Neuromon is birthed
-            currently returns the first parent as the child
+            -moves are randomly picked between the two parents
+            -move parameters are randomly assigned and then shifted
+            towards those of the selected parent (and the other to a lesser degree)
         '''
         moveList = []
         for i in range(6):
-            move = monList[Breeding.pInd[np.random.randint(2)]].move[i]
+            winningPar = Breeding.pInd[np.random.randint(2)]
+            move = monList[winningPar].move[i]
             if not move == None:
-                moveList.append(move)
-        return VarMon(moveList,monList[Breeding.pInd[0]].imageFileName)
+                newMove = move.__class__()#new instance of class
+                for p in newMove.param:
+                    newMove.param[p] += .25*(move.param[p] - newMove.param[p])
+                    if monList[1-winningPar].move[i] == move:
+                        newMove.param[p] += .1*(monList[1-winningPar].move[i].param[p] - newMove.param[p])
+                moveList.append(newMove)
+        baby = VarMon(moveList,monList[Breeding.pInd[0]].imageFileName)
+        return baby
     #main excution f
     quit = False
 
