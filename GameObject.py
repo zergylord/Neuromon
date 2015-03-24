@@ -119,16 +119,12 @@ class Mon(GameObject,Living,Dying):
         self.update(world)
         if self.iType == 1:
             self.botAction = self.bot.step(self,world)
-        for m in self.move:
-            if m == None:
-                continue
+        for m in self.move.viewvalues():
             m.handleMove(self,world)
         #self.attack.handleAttack(self,world)
     def kill(self):
         '''remove any child objects'''
-        for m in self.move:
-            if m is None:
-                continue
+        for m in self.move.viewvalues():
             m.kill()
         super(Mon,self).kill()
     def playerChange(self,world):
@@ -139,40 +135,38 @@ class VarMon(Mon):
         super(VarMon,self).__init__(iType)
         self.imageFileName = imageFileName
         self.setupImage(imageFileName)
-        self.move = 6*[None]
+        self.move = dict()
         self.chargeup = []
         self.cooldown = []
         for m in moveList:
-            if self.move[m.slot] is not None:
+            if self.move.get(m.slot) is not None:
                 continue
             m.bind(self)
             self.move[m.slot] = m
         self.bot = bot
     def getMoveProp(self,propName):
         ret = []
-        for m in self.move:
+        for m in self.move.viewvalues():
             if hasattr(m,propName):
                 ret.append(getattr(m,propName))
         return ret
     def setMoveProp(self,propName,vals):
         count = 0
-        for m in self.move:
+        for m in self.move.viewvalues():
             if hasattr(m,propName):
                 setattr(m,propName,vals[count])
                 count += 1
     def save(self):
         moveParams = []
-        for m in self.move:
-            if not m == None:
-                moveParams.append(m.param)
+        for m in self.move.viewvalues():
+            moveParams.append(self.move[m].param)
         pickle.dump(moveParams, open( "save.p", "wb" ) )
     def load(self):
         moveParams = pickle.load( open( "save.p", "rb" ) )
         ind = 0
-        for m in self.move:
-            if not m == None:
-                m.param = moveParams[ind]
-                ind += 1
+        for m in self.move.viewvalues():
+            m.param = moveParams[ind]
+            ind += 1
     def start(self,world):
         if self.iType == 0:
             pass

@@ -60,19 +60,18 @@ def Breeding(monList):
         barHeight = 30
         left = slot*(width/2)+barLength
         totalHeight = 0
-        for m in mon.move:
-            if not m == None:
-                for p in m.param:
-                    if m.param[p] < 0:
-                        pVal = -1*m.param[p]
-                        neg = 1
-                    else:
-                        pVal = m.param[p]
-                        neg = 0
-                    bar = pygame.surface.Surface([pVal, barHeight])
-                    screen.blit(bar,[left-pVal*neg,top+totalHeight+vertSpace])
-                    count += 1
-                    totalHeight += barHeight + vertSpace
+        for m in mon.move.viewvalues():
+            for p in m.param:
+                if m.param[p] < 0:
+                    pVal = -1*m.param[p]
+                    neg = 1
+                else:
+                    pVal = m.param[p]
+                    neg = 0
+                bar = pygame.surface.Surface([pVal, barHeight])
+                screen.blit(bar,[left-pVal*neg,top+totalHeight+vertSpace])
+                count += 1
+                totalHeight += barHeight + vertSpace
 
         pygame.display.update(pygame.Rect(left-barLength,top,barLength*2,totalHeight))
     def renderMonList():
@@ -90,15 +89,15 @@ def Breeding(monList):
             towards those of the selected parent (and the other to a lesser degree)
         '''
         moveList = []
-        for i in range(6):
+        for m in MOVETYPES:
             winningPar = Breeding.pInd[np.random.randint(2)]
-            move = monList[winningPar].move[i]
+            move = monList[winningPar].move.get(m)
             if not move == None:
                 newMove = move.__class__()#new instance of class
                 for p in newMove.param:
                     newMove.param[p] += .25*(move.param[p] - newMove.param[p])
-                    if monList[1-winningPar].move[i] == move:
-                        newMove.param[p] += .1*(monList[1-winningPar].move[i].param[p] - newMove.param[p])
+                    if monList[1-winningPar].move[m] == move:
+                        newMove.param[p] += .1*(monList[1-winningPar].move[m].param[p] - newMove.param[p])
                 moveList.append(newMove)
         baby = VarMon(moveList,monList[Breeding.pInd[0]].imageFileName)
         #select default parents

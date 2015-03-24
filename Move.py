@@ -41,7 +41,7 @@ class SharpWalk(Move):
         speed: pixels per second movement
     '''
     numActions = 2 
-    slot = LEGS
+    slot = 'LEGS'
     def _paramGen(self):
         self.param['speed'] = np.random.normal(200,20)
     def __init__(self):
@@ -85,7 +85,7 @@ class Shark(Move):
         Movement grants health
         you take damage while staying still
     '''
-    slot = SKIN
+    slot = 'SKIN'
     def _paramGen(self):
         self.param['dps'] = np.random.normal(1,.1)
         self.param['heal'] = np.random.normal(30,3)
@@ -114,7 +114,7 @@ class Dig(Move):
     cancelCooldown: cooldown when hole destoryed before movement
 
     '''
-    slot = ARMS
+    slot = 'ARMS'
     def _paramGen(self):
         self.param['baseChargeup'] = np.random.normal(100,10)
         self.param['distChargeup'] = np.random.normal(5000,500)
@@ -163,7 +163,7 @@ class Dig(Move):
     def kill(self):
         self.hole.kill()
 class BounceShot(Move):
-    slot = ARMS
+    slot = 'ARMS'
     def _paramGen(self):
         self.param['baseCooldown'] = np.random.normal(1000,100)
         self.param['size'] = int(max(10,np.random.normal(100,50)))
@@ -207,7 +207,7 @@ class Beam(Move):
     horBeamImage.fill([255,20,70])
     vertBeamImage = pygame.Surface([50,300])
     vertBeamImage.fill([255,20,70])
-    slot = MOUTH
+    slot = 'MOUTH'
     def _paramGen(self):
         self.param['duration'] = np.random.normal(1000,500)
         self.param['damage'] = max(.1,np.random.normal(5,2))

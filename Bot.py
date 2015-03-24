@@ -44,7 +44,7 @@ class BeamDig(Bot):
                 x = self.foe.rect.centerx
                 y = np.random.randint(1,height)
             moveTo = [x,y]
-        ret = 6*[None]
+        ret = dict()
         ret[MOUTH] = pew
         ret[ARMS] = [move,moveTo]
         return ret
