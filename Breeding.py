@@ -2,6 +2,7 @@ import pygame
 from pygame import key as key
 from GameObject import *
 from globals import *
+from operator import add
 def Breeding(monList):
     Breeding.pInd = [0,1] # current parents to breed
     Breeding.cInd = 0 #current parent to update
@@ -50,6 +51,7 @@ def Breeding(monList):
         renderStats(Breeding.cInd,val)
         Breeding.cInd = 1 - Breeding.cInd
         print Breeding.pInd
+        renderMonList()
     def renderStats(slot,ind):
         mon = monList[ind]
         screen.blit(background,[0,0])
@@ -89,6 +91,8 @@ def Breeding(monList):
         print str(monList)
         monNameText,rect = font.render(str(monList),(255,255,255))
         screen.blit(monNameText,[0,0])
+        indexText,_ = font.render(str(map(add,Breeding.pInd,[1,1])),(255,255,255))
+        screen.blit(indexText,[width-200,0])
         pygame.display.update(0,0,width,rect.height) #refresh whole hor section of screen, since don't track max hor size
     def conceive():
         ''' -merge the stats and Moves of the parents

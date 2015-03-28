@@ -128,6 +128,10 @@ class Mon(GameObject,Living,Dying):
             m.kill()
         super(Mon,self).kill()
     def playerChange(self,world):
+        '''
+        handles changes the state of the mon when
+        the mons in play change
+        '''
         if self.iType == 1:
             self.bot.pickFoe(self,world)
 class VarMon(Mon):
@@ -159,7 +163,7 @@ class VarMon(Mon):
     def save(self):
         moveParams = []
         for m in self.move.viewvalues():
-            moveParams.append(self.move[m].param)
+            moveParams.append(m.param)
         pickle.dump(moveParams, open( "save.p", "wb" ) )
     def load(self):
         moveParams = pickle.load( open( "save.p", "rb" ) )

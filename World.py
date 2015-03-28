@@ -45,19 +45,7 @@ class World(Environment):
             self.agent = p1
         self.trainers[0].setCurMon(0)
          
-        p2 = VarMon([Dig(),Beam(),Shark()],'CreatureSprite.png',p2Type,BeamDig)
-        p2.rect.centerx = size[0]
-        p2.rect.centery = 500
-        self.everybody.add(p2)
-        self.players.add(p2)
-        self.trainers[1].mon.append(p2)
-        self.trainers[1].curMon = 0
-        for i in range(3):
-            print i
-            backupMon = VarMon([Dig(),Beam(),Shark()],'CreatureSprite.png',p2Type,BeamDig)
-            self.trainers[1].mon.append(backupMon)
-        if p2Type == 2:
-            self.agent = p2
+        self.createEnemyTrainer()
         
         self.effects = pygame.sprite.Group()
 
@@ -77,6 +65,20 @@ class World(Environment):
         screen.blit(scoreDisp1,[0,size[1]])
         screen.blit(scoreDisp2,[size[0]-100,size[1]])
         pygame.display.update()#the only time portrait area is updated
+    def createEnemyTrainer(self):
+        p2 = VarMon([Dig(),Beam(),Shark()],'CreatureSprite.png',p2Type,BeamDig)
+        p2.rect.centerx = size[0]
+        p2.rect.centery = 500
+        self.everybody.add(p2)
+        self.players.add(p2)
+        self.trainers[1].mon.append(p2)
+        self.trainers[1].curMon = 0
+        for i in range(1):
+            print i
+            backupMon = VarMon([Dig(),Beam(),Shark()],'CreatureSprite.png',p2Type,BeamDig)
+            self.trainers[1].mon.append(backupMon)
+        if p2Type == 2:
+            self.agent = p2
 
     def start(self):
         for p in self.players:
@@ -98,7 +100,7 @@ class World(Environment):
                     breedable = Breeding(self.trainers[0].getBreedableMon())
                     self.trainers[0].setBreedableMon(breedable)
                     print self.trainers[0].mon
-                if event.key == pygame.K_4:
+                if event.key == pygame.K_6:
                     self.trainers[0].getCurMon().save()
                 if event.key == pygame.K_7:
                     self.trainers[0].getCurMon().load()
@@ -220,7 +222,14 @@ class World(Environment):
                 if p in t.mon:
                     print 'player' + str(1-t.num) + ' points!'
                     self.trainers[1-t.num].score += 100
-                    t.loseCurMon()
+                    lost = t.loseCurMon()
+                    if lost:
+                        if t.num == 0: #player
+                            pass
+                        else: #opponent
+                            self.createEnemyTrainer()
+                            t.getCurMon().start(self)
+                            
             self.updateGUI(self.trainers[0].score,self.trainers[1].score)
             for play in self.players:
                 play.playerChange(self)

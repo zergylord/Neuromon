@@ -1,6 +1,3 @@
-'''
-TODO: switch self.move from 6 element list to dict
-'''
 from itertools import count
 import pygame
 from pygame import key as key
@@ -17,13 +14,57 @@ class Trainer(object):
         self.score = 0
         self.keysPressed = 323*[0]
         self.human = human
+    def newKeyPress(self,curPressed,k):
+        '''
+        check if button was just pressed
+        TODO: move key handling to a utility module
+        '''
+        return not self.keysPressed[k] and curPressed[k]
+
     def step(self):
         if self.human:
             curPressed = key.get_pressed()
-            if not self.keysPressed[pygame.K_c] and curPressed[pygame.K_c]:
+            if self.newKeyPress(curPressed,pygame.K_c):
                 self.catchAttempt()
+            if self.newKeyPress(curPressed,pygame.K_1):
+                self.switchToMon(0)
+            if self.newKeyPress(curPressed,pygame.K_2):
+                self.switchToMon(1)
+            if self.newKeyPress(curPressed,pygame.K_3):
+                self.switchToMon(2)
+            if self.newKeyPress(curPressed,pygame.K_4):
+                self.setCurMon(3)
+                self.switchToMon(3)
             self.keysPressed = curPressed
+    def switchToMon(self,ind):
+        '''
+        When you have a Mon already out, return it to hand
+        and put out a different one
+        '''
+        if ind >= len(self.mon):
+            print 'you dont have that many neuromon'
+            return
+        elif self.curMon == ind:
+            print 'switching to the same mon...'
+            return
+        #remove curMon from play
+        self.getCurMon().kill()
+        self.world.players.remove(self.getCurMon())
+        #switch to new mon
+        self.setCurMon(ind)
+        #let the other player know about the swap
+        self.world.trainers[1-self.num].getCurMon().playerChange(self.world)
+        
+
+
     def setCurMon(self,ind):
+        '''
+        Called only when sending out a mon
+        and you dont already have one out
+        '''
+        if ind >= len(self.mon):
+            print 'you dont have that many neuromon'
+            return
         self.curMon = ind
         self.mon[ind].rect.centery = np.random.randint(1,size[1])
         self.mon[ind].rect.centerx = np.random.randint(1,size[0]/2.0)
@@ -51,21 +92,33 @@ class Trainer(object):
 
 
     def loseCurMon(self):
+        '''
+        Removes Mon from play and from the Trainers hand
+        Returns: LastMonDead? bool
+        '''
         self.getCurMon().kill()
         self.world.players.remove(self.getCurMon())
         self.mon.remove(self.getCurMon())
         if len(self.mon) > 0:
             self.setCurMon(0)
+            return False
         else:
             print 'player' + str(self.num) + ' is out of neuromon!'
-            pygame.event.post(pygame.event.Event(pygame.QUIT))
+            return True
+            #pygame.event.post(pygame.event.Event(pygame.QUIT))
     def catchAttempt(self):
+        if len(self.mon) >= 4:
+            print 'you already have 4 neuromon!'
+            return
         otherTrainer = self.world.trainers[1-self.num]
         otherMon = otherTrainer.getCurMon()
         print otherMon
         ' remove mon from board and from other trainer'
         #print otherMon in self.world.everybody
-        otherTrainer.loseCurMon()
+        lost = otherTrainer.loseCurMon()
+        if lost:
+            self.world.createEnemyTrainer()
+            otherTrainer.getCurMon().start(self.world)
         ' add mon to this trainer'
         otherMon.iType = 0
         self.mon.append(otherMon)

@@ -128,6 +128,9 @@ class Dig(Move):
     paramList = ['baseChargeup','distChargeup','baseCooldown','cancelCooldown']
     _pMean = {'baseChargeup':100,'distChargeup':5000,'baseCooldown':100,'cancelCooldown':1000}
     _pStd = {'baseChargeup':10,'distChargeup':500,'baseCooldown':10,'cancelCooldown':100}
+    @staticmethod
+    def name():
+        return 'Dig Tunnel'
     def __init__(self):
         super(Dig,self).__init__()
 
