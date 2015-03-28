@@ -29,18 +29,19 @@ class World(Environment):
         self.bullets = pygame.sprite.Group()
         self.everybody = pygame.sprite.Group()
         #setup players
-
-        p1 = VarMon([SharpWalk(),BounceShot(),Shark()],'CreatureSprite.png',p1Type)
-        p1.rect.centerx = 1
-        p1.rect.centery = 500
-        self.everybody.add(p1)
-        self.players.add(p1)
-        self.trainers = (Trainer(True),Trainer(False))
         Trainer.world = self
-        self.trainers[0].mon.append(p1)
-        for i in range(3):
-            backupMon = VarMon([SharpWalk(),BounceShot(),Shark()],'CreatureSprite.png',p1Type)
-            self.trainers[0].mon.append(backupMon)
+        self.trainers = (Trainer(True,False),Trainer(False))
+
+        if self.trainers[0].mon == []:
+            p1 = VarMon([SharpWalk(),BounceShot(),Shark()],'CreatureSprite.png',p1Type)
+            p1.rect.centerx = 1
+            p1.rect.centery = 500
+            self.everybody.add(p1)
+            self.players.add(p1)
+            self.trainers[0].mon.append(p1)
+            for i in range(3):
+                backupMon = VarMon([SharpWalk(),BounceShot(),Shark()],'CreatureSprite.png',p1Type)
+                self.trainers[0].mon.append(backupMon)
         if p1Type == 2:
             self.agent = p1
         self.trainers[0].setCurMon(0)
@@ -101,9 +102,11 @@ class World(Environment):
                     self.trainers[0].setBreedableMon(breedable)
                     print self.trainers[0].mon
                 if event.key == pygame.K_6:
-                    self.trainers[0].getCurMon().save()
+                    self.trainers[0].save()
+                '''
                 if event.key == pygame.K_7:
-                    self.trainers[0].getCurMon().load()
+                    self.trainers[0].load()
+                '''
         curPressed = key.get_pressed()
         if curPressed[pygame.K_ESCAPE]:
             pygame.event.post(pygame.event.Event(pygame.QUIT))

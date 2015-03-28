@@ -3,17 +3,22 @@ import pygame
 from pygame import key as key
 import numpy as np
 from globals import *
+import pickle
+from GameObject import *
 class Trainer(object):
     number = count()
     world = None
-    def __init__(self,human = False):
+    def __init__(self,human = False,fresh = True):
         self.neuroballs = 3
         self.num = self.number.next()
-        self.mon = []
         self.curMon = 0 #index to mon in use
         self.score = 0
         self.keysPressed = 323*[0]
         self.human = human
+        if fresh:
+            self.mon = []
+        else:
+            self.load()
     def newKeyPress(self,curPressed,k):
         '''
         check if button was just pressed
@@ -35,6 +40,30 @@ class Trainer(object):
             if self.newKeyPress(curPressed,pygame.K_4):
                 self.switchToMon(3)
             self.keysPressed = curPressed
+    def save(self):
+        f = open("save.p","wb")
+        for m in self.mon:
+            m.save(f)
+    def load(self):
+        print 'loading'
+        self.mon = []
+        f = open( "save.p", "rb" )
+        try:
+            while True:
+                moveSlots,moveClasses,moveParams = pickle.load(f)
+                moveList = [m() for m in moveClasses]
+                neuromon = VarMon(moveList,'CreatureSprite.png')
+                ind = 0
+                for m in neuromon.move.viewvalues():
+                    m.param = moveParams[ind]
+                    ind += 1
+                self.mon.append(neuromon)
+                print 'got one'
+        except EOFError:
+            pass
+        finally:
+            self.setCurMon(0)
+
     def revive(self):
         '''
         Called once all of your Mon have fainted

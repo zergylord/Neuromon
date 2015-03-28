@@ -161,17 +161,27 @@ class VarMon(Mon):
             if hasattr(m,propName):
                 setattr(m,propName,vals[count])
                 count += 1
-    def save(self):
+    def save(self,f):
+        print 'saving'
+        moveSlots = []
+        moveClasses = []
         moveParams = []
         for m in self.move.viewvalues():
+            moveSlots.append(m.slot)
+            moveClasses.append(m.__class__)
             moveParams.append(m.param)
-        pickle.dump(moveParams, open( "save.p", "wb" ) )
+
+        pickle.dump((moveSlots,moveClasses,moveParams),f)
+    '''
     def load(self):
-        moveParams = pickle.load( open( "save.p", "rb" ) )
+        print 'loading mon params'
+        f = open( "save.p", "rb" ) 
+        _,_,moveParams = pickle.load(f)
         ind = 0
         for m in self.move.viewvalues():
             m.param = moveParams[ind]
             ind += 1
+    '''
     def start(self,world):
         if self.iType == 0:
             pass
