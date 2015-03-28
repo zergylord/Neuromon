@@ -109,7 +109,7 @@ def Breeding(monList):
                 newMove = move.__class__()#new instance of class
                 for p in newMove.param:
                     newMove.param[p] += .25*(move.param[p] - newMove.param[p])
-                    if monList[1-winningPar].move[m] == move:
+                    if monList[1-winningPar].move.get(m) == move:
                         newMove.param[p] += .1*(monList[1-winningPar].move[m].param[p] - newMove.param[p])
                 moveList.append(newMove)
         baby = VarMon(moveList,monList[Breeding.pInd[0]].imageFileName)

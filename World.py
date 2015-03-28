@@ -222,11 +222,18 @@ class World(Environment):
                 if p in t.mon:
                     print 'player' + str(1-t.num) + ' points!'
                     self.trainers[1-t.num].score += 100
-                    lost = t.loseCurMon()
-                    if lost:
-                        if t.num == 0: #player
-                            pass
-                        else: #opponent
+                    if t.num == 0: #player
+                        p.fainted = True
+                        nextMon = (ind for ind in range(len(t.mon)) if not t.mon[ind].fainted)
+                        try:
+                            t.switchToMon(nextMon.next())
+                        except StopIteration:
+                            t.revive()
+                            t.switchToMon(0)
+
+                    else: #opponent
+                        lost = t.loseCurMon()
+                        if lost:
                             self.createEnemyTrainer()
                             t.getCurMon().start(self)
                             

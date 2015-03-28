@@ -33,9 +33,16 @@ class Trainer(object):
             if self.newKeyPress(curPressed,pygame.K_3):
                 self.switchToMon(2)
             if self.newKeyPress(curPressed,pygame.K_4):
-                self.setCurMon(3)
                 self.switchToMon(3)
             self.keysPressed = curPressed
+    def revive(self):
+        '''
+        Called once all of your Mon have fainted
+        '''
+        print 'your bad and you should feel bad!'
+        for m in self.mon:
+            m.fainted = False
+            m.health = 10
     def switchToMon(self,ind):
         '''
         When you have a Mon already out, return it to hand
@@ -46,6 +53,9 @@ class Trainer(object):
             return
         elif self.curMon == ind:
             print 'switching to the same mon...'
+            return
+        elif self.mon[ind].fainted:
+            print 'that mon taking the big sleep'
             return
         #remove curMon from play
         self.getCurMon().kill()
@@ -64,6 +74,9 @@ class Trainer(object):
         '''
         if ind >= len(self.mon):
             print 'you dont have that many neuromon'
+            return
+        if self.mon[ind].fainted:
+            print 'that mon taking the big sleep'
             return
         self.curMon = ind
         self.mon[ind].rect.centery = np.random.randint(1,size[1])

@@ -53,6 +53,7 @@ class Bullet(FragileObject):
 class Mon(GameObject,Living,Dying):
     def __init__(self,iType):
         super(Mon,self).__init__()
+        self.fainted = False
         self.passThrough = False
         self.font = pygame.freetype.SysFont('',18) 
         self.textDur = 0
