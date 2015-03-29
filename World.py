@@ -67,7 +67,7 @@ class World(Environment):
         screen.blit(scoreDisp2,[size[0]-100,size[1]])
         pygame.display.update()#the only time portrait area is updated
     def createEnemyTrainer(self):
-        p2 = VarMon([Dig(),Beam(),Shark()],'CreatureSprite.png',p2Type,BeamDig)
+        p2 = VarMon([Dig(),Beam(),Shark()],'CreatureSprite.png',p2Type,VarBot)
         p2.rect.centerx = size[0]
         p2.rect.centery = 500
         self.everybody.add(p2)
@@ -76,7 +76,7 @@ class World(Environment):
         self.trainers[1].curMon = 0
         for i in range(1):
             print i
-            backupMon = VarMon([Dig(),Beam(),Shark()],'CreatureSprite.png',p2Type,BeamDig)
+            backupMon = VarMon([Dig(),Beam(),Shark()],'CreatureSprite.png',p2Type,VarBot)
             self.trainers[1].mon.append(backupMon)
         if p2Type == 2:
             self.agent = p2

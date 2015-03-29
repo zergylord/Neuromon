@@ -14,6 +14,21 @@ class Bot(object):
         '''
         pass
 
+class VarBot(Bot):
+    def __init__(self,mon,world):
+        self.pickFoe(mon,world)
+    def pickFoe(self,mon,world):
+        self.foe = world.players.difference(set([mon])).pop()
+    def step(self,mon,world):
+        '''
+        currently, iteratively perform actions associated
+        with each move.
+        Later, use randomized priority queue.
+        '''
+        ret = dict()
+        for m in mon.move:
+            ret[m] = mon.move[m].botStep(mon,self.foe,world)
+        return ret
 class BeamDig(Bot):
     def __init__(self,mon,world):
         self.pickFoe(mon,world)

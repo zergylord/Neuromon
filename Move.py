@@ -25,6 +25,8 @@ class Move(object):
     @staticmethod
     def name():
         return 'Move'
+    def botStep(self,mon,foe,world):
+        pass
     def bind(self,mon):
         ''' call to bind to an inited Mon'''
         pass
@@ -143,6 +145,18 @@ class Dig(Move):
         self.cooldown = 0
     def bind(self,mon):
         pass
+    def botStep(self,mon,foe,world):
+        move = True
+        coin = np.random.randint(2)
+        if coin == 0:
+            x = np.random.randint(1,width)
+            y = foe.rect.centery
+        else:
+            x = foe.rect.centerx
+            y = np.random.randint(1,height)
+        moveTo = [x,y]
+        return [move,moveTo]
+
     def handleMove(self,mon,world):
         #check for movement events
         move,mousePos = self.getInput(mon)
@@ -234,6 +248,18 @@ class Beam(Move):
     def bind(self,mon):
         self.beam.horOffset = self.beam.rect.width/2 + mon.rect.width/2 + 1
         self.beam.vertOffset = self.beam.rect.width/2 + mon.rect.height/2 + 1
+
+    def botStep(self,mon,foe,world):
+        horDiff = foe.rect.centerx - mon.rect.centerx
+        vertDiff = foe.rect.centery - mon.rect.centery
+        move = False
+        moveTo = []
+        pew = [0,0]
+        if np.abs(vertDiff) < 20 and np.abs(horDiff) < self.horBeamImage.get_width():
+           pew[0] = np.sign(horDiff)
+        elif np.abs(horDiff) < 20 and np.abs(vertDiff) < self.horBeamImage.get_width():
+           pew[1] = np.sign(vertDiff)
+        return pew
 
     def handleMove(self,mon,world):
         '''the only externally called method. Called every step and takes care of everything (input, resolution)'''
