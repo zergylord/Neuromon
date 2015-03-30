@@ -1,5 +1,6 @@
 import sys, pygame
 import numpy as np
+import random
 from scipy import misc
 import matplotlib.pyplot as plt
 from Panoptir import *
@@ -33,18 +34,12 @@ class World(Environment):
         self.trainers = (Trainer(True,False),Trainer(False))
 
         if self.trainers[0].mon == []:
-            p1 = VarMon([SharpWalk(),BounceShot(),Shark()],'CreatureSprite.png',p1Type)
-            p1.rect.centerx = 1
-            p1.rect.centery = 500
-            self.everybody.add(p1)
-            self.players.add(p1)
-            self.trainers[0].mon.append(p1)
-            for i in range(3):
+            for i in range(4):
                 backupMon = VarMon([SharpWalk(),BounceShot(),Shark()],'CreatureSprite.png',p1Type)
                 self.trainers[0].mon.append(backupMon)
-        if p1Type == 2:
-            self.agent = p1
         self.trainers[0].setCurMon(0)
+        if p1Type == 2:
+            self.agent = self.trainers[0].getCurMon()
          
         self.createEnemyTrainer()
         
@@ -67,23 +62,20 @@ class World(Environment):
         screen.blit(scoreDisp2,[size[0]-100,size[1]])
         pygame.display.update()#the only time portrait area is updated
     def createEnemyTrainer(self):
-        p2 = VarMon([Dig(),Beam(),Shark()],'CreatureSprite.png',p2Type,VarBot)
-        p2.rect.centerx = size[0]
-        p2.rect.centery = 500
-        self.everybody.add(p2)
-        self.players.add(p2)
-        self.trainers[1].mon.append(p2)
-        self.trainers[1].curMon = 0
-        for i in range(1):
+        moveList = []
+        for i in range(2):
             print i
-            backupMon = VarMon([Dig(),Beam(),Shark()],'CreatureSprite.png',p2Type,VarBot)
+            for s in MOVETYPES:
+                if not Move.moveDict[s] == None:
+                    moveList.append(random.sample(Move.moveDict[s],1)[0]())
+
+            backupMon = VarMon(moveList,'CreatureSprite.png',p2Type,VarBot)
             self.trainers[1].mon.append(backupMon)
-        if p2Type == 2:
-            self.agent = p2
+        self.trainers[1].setCurMon(0)
 
     def start(self):
-        for p in self.players:
-            p.start(self)
+        print Move.moveDict
+        pass
     def env_start(self):
         self.start()
         returnObs=Observation()
@@ -238,7 +230,6 @@ class World(Environment):
                         lost = t.loseCurMon()
                         if lost:
                             self.createEnemyTrainer()
-                            t.getCurMon().start(self)
                             
             self.updateGUI(self.trainers[0].score,self.trainers[1].score)
             for play in self.players:

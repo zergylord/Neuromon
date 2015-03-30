@@ -9,7 +9,22 @@ import pygame
 import pygame.key as key
 import numpy as np
 import inspect
+class MoveWatcher(type):
+    def __init__(cls, name, bases, clsdict):
+        if len(cls.mro()) > 2:
+            cls.register()
+        super(MoveWatcher, cls).__init__(name, bases, clsdict)
 class Move(object):
+    __metaclass__ = MoveWatcher
+    moveDict = dict()
+    for s in MOVETYPES:
+        moveDict[s] = None
+    @classmethod
+    def register(cls):
+        if not Move.moveDict.get(cls.slot) == None:
+            Move.moveDict[cls.slot].add(cls)
+        else:
+            Move.moveDict[cls.slot] = set([cls])
     @classmethod
     def _sample(cls,param):
         return np.random.normal(cls._pMean[param],cls._pStd[param])
@@ -74,6 +89,11 @@ class SharpWalk(Move):
                 mon.setHeading([0,-1])
         mon.rect = mon.rect.move(velo)
         mon.velo = velo #just for the world to know about
+    def botStep(self,mon,foe,world):
+        velo = [0,0]
+        velo[0] = np.random.randint(3)-1
+        velo[1] = np.random.randint(3)-1
+        return velo
     def getHumanInput(self):
         '''
             returns:
@@ -199,6 +219,9 @@ class BounceShot(Move):
         self.cooldown = -1
     def bind(self,mon):
         pass
+    def botStep(self,mon,foe,world):
+        shoot = True
+        return shoot
     def canShoot(self):
         return pygame.time.get_ticks() > self.cooldown
     def handleMove(self,mon,world):
