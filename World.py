@@ -3,9 +3,11 @@ import numpy as np
 import random
 from scipy import misc
 import matplotlib.pyplot as plt
-from Panoptir import *
-from Slogun import *
-from Slobeam import *
+#from Panoptir import *
+#from Slogun import *
+#from Slobeam import *
+from Bot import *
+from Move import *
 from GameObject import *
 from Trainer import *
 from pygame import key as key
@@ -31,7 +33,7 @@ class World(Environment):
         self.everybody = pygame.sprite.Group()
         #setup players
         Trainer.world = self
-        self.trainers = (Trainer(True,False),Trainer(False))
+        self.trainers = (Trainer(True,True),Trainer(False))
 
         if self.trainers[0].mon == []:
             for i in range(4):
