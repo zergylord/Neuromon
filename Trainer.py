@@ -160,7 +160,6 @@ class Trainer(object):
         lost = otherTrainer.loseCurMon()
         if lost:
             self.world.createEnemyTrainer()
-            otherTrainer.getCurMon().start(self.world)
         ' add mon to this trainer'
         otherMon.iType = 0
         self.mon.append(otherMon)

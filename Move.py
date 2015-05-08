@@ -73,10 +73,12 @@ class SharpWalk(Move):
         return 'Sharp Walk'
     def __init__(self):
         super(SharpWalk,self).__init__()
+        self.prevVelo = [0,0]
     def bind(self,mon):
         pass
     def handleMove(self,mon,world):
         velo = self.getInput(mon)
+        self.prevVelo = velo
         'set the heading'
         if velo[0] > 0:
             mon.setHeading([1,0])
@@ -90,9 +92,10 @@ class SharpWalk(Move):
         mon.rect = mon.rect.move(velo)
         mon.velo = velo #just for the world to know about
     def botStep(self,mon,foe,world):
-        velo = [0,0]
-        velo[0] = np.random.randint(3)-1
-        velo[1] = np.random.randint(3)-1
+        velo = self.prevVelo
+        if np.random.rand() < .05:
+            dim = np.random.randint(2)
+            velo[dim] = np.random.randint(3)-1
         return velo
     def getHumanInput(self):
         '''

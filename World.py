@@ -36,7 +36,7 @@ class World(Environment):
         self.trainers = (Trainer(True,True),Trainer(False))
 
         if self.trainers[0].mon == []:
-            for i in range(4):
+            for i in range(1):
                 backupMon = VarMon([SharpWalk(),BounceShot(),Shark()],'CreatureSprite.png',p1Type)
                 self.trainers[0].mon.append(backupMon)
         self.trainers[0].setCurMon(0)
@@ -226,7 +226,8 @@ class World(Environment):
                             t.switchToMon(nextMon.next())
                         except StopIteration:
                             t.revive()
-                            t.switchToMon(0)
+                            t.setCurMon(0)
+                            print t.mon[0].alive()
 
                     else: #opponent
                         lost = t.loseCurMon()
