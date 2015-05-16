@@ -65,7 +65,7 @@ class World(Environment):
         pygame.display.update()#the only time portrait area is updated
     def createEnemyTrainer(self):
         moveList = []
-        for i in range(2):
+        for i in range(1):
             print i
             for s in MOVETYPES:
                 if not Move.moveDict[s] == None:
